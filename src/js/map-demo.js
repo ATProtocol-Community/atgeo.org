@@ -46,7 +46,7 @@
     container: container,
     style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json',
     center: [-122.4194, 37.7749],
-    zoom: 13,
+    zoom: 12,
   });
 
   let markers = [];
