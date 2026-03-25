@@ -1,6 +1,4 @@
-# ATGeo
-
-***Places for ATProtocol***
+# ATGeo: Places for ATProtocol
 
 ATGeo provides a [place lexicon](#lexicon) for ATProtocol and a [lookup service](#gazetteer) for geographic points of interest that uses that lexicon.
 

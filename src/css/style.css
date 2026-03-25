@@ -1,0 +1,400 @@
+/* ===== Reset & Base ===== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: #1a1a1a;
+  background: #f8f8f6;
+}
+
+/* ===== Content Column ===== */
+
+.content {
+  max-width: 72ch;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 1.25rem 1rem 3rem;
+  }
+}
+
+/* ===== Typography ===== */
+
+h1,
+h2,
+h3 {
+  font-weight: 600;
+  line-height: 1.25;
+  margin-top: 2.25em;
+  margin-bottom: 0.5em;
+  color: #111;
+}
+
+h1 {
+  font-size: 2rem;
+  margin-top: 1rem;
+  border-bottom: 2px solid #d8d8d2;
+  padding-bottom: 0.3em;
+}
+
+h2 {
+  font-size: 1.4rem;
+  border-bottom: 1px solid #e4e4de;
+  padding-bottom: 0.2em;
+}
+
+h3 {
+  font-size: 1.1rem;
+}
+
+p {
+  margin: 0 0 1.1em;
+}
+
+ul,
+ol {
+  margin: 0 0 1.1em;
+  padding-left: 1.6em;
+}
+
+li {
+  margin-bottom: 0.25em;
+}
+
+a {
+  color: #2a6496;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  color: #1a4a72;
+}
+
+strong {
+  font-weight: 600;
+}
+
+em {
+  font-style: italic;
+}
+
+/* ===== Inline Code ===== */
+
+code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    monospace;
+  font-size: 0.875em;
+  background: #eeeee8;
+  border: 1px solid #ddddd6;
+  border-radius: 3px;
+  padding: 0.1em 0.35em;
+  white-space: nowrap;
+}
+
+/* ===== Fenced Code Blocks ===== */
+
+pre {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    monospace;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  background: #f0f0ea;
+  border: 1px solid #d8d8d0;
+  border-radius: 5px;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  margin: 0 0 1.25em;
+  white-space: pre;
+}
+
+pre code {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  font-size: inherit;
+  white-space: inherit;
+}
+
+/* ===== Widgets (shared) ===== */
+
+.widget {
+  margin: 2rem 0;
+}
+
+/* ===== Map Widget ===== */
+
+#map-demo {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #c8c8c0;
+}
+
+#map-demo .map-search {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  z-index: 10;
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+#map-demo .map-search input[type="text"] {
+  flex: 1;
+}
+
+.map-search-error {
+  color: #dc2626;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 320px) {
+  #map-demo {
+    height: 280px;
+  }
+}
+
+/* ===== Place Display Widget ===== */
+
+#place-display {
+  background: #f4f4ee;
+  border: 1px solid #d0d0c8;
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+}
+
+#place-display pre {
+  margin: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  overflow-x: auto;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+/* ===== Query Demo Widget ===== */
+
+#query-demo {
+  background: #f4f4ee;
+  border: 1px solid #d0d0c8;
+  border-radius: 6px;
+  padding: 1.25rem 1.5rem;
+}
+
+#query-demo .query-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 0.75rem;
+  align-items: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+#query-demo .query-results {
+  margin-top: 1rem;
+}
+
+#query-demo .query-results pre {
+  margin: 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* ===== Form Elements ===== */
+
+input[type="text"],
+input[type="search"],
+input[type="number"],
+select,
+textarea {
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: #1a1a1a;
+  background: #fff;
+  border: 1px solid #b8b8b0;
+  border-radius: 4px;
+  padding: 0.35em 0.6em;
+  line-height: 1.4;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.15s;
+}
+
+input[type="text"]:focus,
+input[type="search"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #2a6496;
+  box-shadow: 0 0 0 2px rgba(42, 100, 150, 0.15);
+}
+
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.55em center;
+  padding-right: 1.8em;
+}
+
+label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #444;
+  margin-bottom: 0.2em;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+button,
+input[type="submit"],
+input[type="button"] {
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #fff;
+  background: #2a6496;
+  border: 1px solid #22527a;
+  border-radius: 4px;
+  padding: 0.4em 0.9em;
+  cursor: pointer;
+  line-height: 1.4;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover {
+  background: #22527a;
+  border-color: #1a3f5c;
+}
+
+button:active,
+input[type="submit"]:active,
+input[type="button"]:active {
+  background: #1a3f5c;
+}
+
+button:focus,
+input[type="submit"]:focus,
+input[type="button"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(42, 100, 150, 0.35);
+}
+
+button:disabled,
+input[type="submit"]:disabled,
+input[type="button"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== JSON Syntax Highlighting ===== */
+
+.json-key {
+  color: #6f42c1;
+}
+
+.json-string {
+  color: #22863a;
+}
+
+.json-number {
+  color: #005cc5;
+}
+
+.json-bool {
+  color: #d73a49;
+}
+
+/* ===== Query Demo Extras ===== */
+
+.query-url {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    monospace;
+  font-size: 0.8rem;
+  background: #eeeee8;
+  border: 1px solid #d8d8d0;
+  border-radius: 4px;
+  padding: 0.6rem 0.9rem;
+  white-space: pre;
+  overflow-x: auto;
+  margin: 0.75rem 0;
+  color: #555;
+}
+
+.query-form-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 0.75rem;
+  align-items: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+.query-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.query-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 0.15em;
+}
+
+.query-loading {
+  color: #666;
+  font-style: italic;
+}
+
+.query-error {
+  color: #dc2626;
+}
+
+/* ===== Place Display Extras ===== */
+
+.place-display-hint {
+  color: #888;
+  font-style: italic;
+  margin: 0;
+}
+
+.place-display-name {
+  margin: 0 0 0.5em;
+  font-size: 1.1rem;
+}
