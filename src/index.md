@@ -6,7 +6,7 @@ title: "ATGeo: Places for ATProtocol"
 
 # ATGeo: Places for ATProtocol
 
-ATGeo provides a [place lexicon](#lexicon) for ATProtocol and a [lookup service](#gazetteer) for geographic points of interest that uses that lexicon.
+ATGeo provides a `Place` lexicon for ATProtocol, and a lookup service for geographic points of interest that uses that lexicon.
 
 {% mapDemo %}
 
@@ -16,13 +16,13 @@ ATGeo provides a [place lexicon](#lexicon) for ATProtocol and a [lookup service]
 
 An ATGeo *Gazetteer* is just an XRPC lookup service that serves authoritative place data in ATGeo `Place` formatted JSON.
 
-The **places.atgeo.org** gazetteer lookup service allows you to pull points of interest from either Foursquare Open Source Places or Overture Maps. OpenStreetMap and Who's on First are coming shortly.
+The **places.atgeo.org** gazetteer lookup service allows you to pull points of interest (PoIs) from either Foursquare Open Source Places or Overture Maps. OpenStreetMap and Who's on First are coming shortly.
 
 The gazetteer service is built using Free Software and free data. The public server is community supported, so please go it easy on it, or consider building your own if your app takes off.
 
 ## Data model
 
-Here's an example of a record from `org.atgeo.places.fsq`:
+Here's an example of a record from `org.atgeo.places.foursquare`:
 
 ```
 ...
@@ -40,11 +40,15 @@ The service endpoint at `https://places.atgeo.org/xrpc` provides an `org.atgeo.s
 
 {% queryDemo %}
 
-## Never store user GPS coordinates, EVER
+## Never automatically store user locations, EVER
 
-App developers cannot rely on users making informed decisions about location safety. Users often don't understand the stakes and don't take the time to figure it out, until it's too late. **App developers -- meaning YOU -- are responsible for the safety of their users.**
+App developers cannot rely on users making informed decisions about location safety. Users often don't understand the stakes and don't take the time to figure it out, until it's too late. **App developers -- meaning YOU -- are responsible for the safety of YOUR users.**
 
-Our key recommendation to location-based app developers is: **NEVER STORE THE EXACT LOCATION OF YOUR USERS**. We cannot state this strongly enough. You *do not* know who might consume the records you create on your users' behalf, or which authoritarian actor might subpoena your service's database. You do not know who might attempt to track your users with harmful intent.
+Our key recommendation to location-based app developers is:
+
+> **NEVER AUTOMATICALLY STORE THE EXACT LOCATION OF YOUR USERS**.
+
+We cannot state this strongly enough. You *do not* know who might consume the records you create on your users' behalf, or which authoritarian actor might subpoena your service's database. You do not know who might attempt to track your users with harmful intent.
 
 If your application reads GPS or location data from a client, never store the coordinates directly -- instead **use the data to provide a list of public locations that a user can select from**. That's what the ATGeo lookup service is for. If your app UX doesn't support that, then store an H3 grid cell at a very low granularity. This gives your users a measure of safety and plausible deniability when using your app.
 

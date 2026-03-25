@@ -4,7 +4,7 @@
   const BASE_URL = 'https://places.atgeo.org/xrpc/org.atgeo.searchRecords';
 
   const COLLECTIONS = [
-    { label: 'Foursquare', value: 'org.atgeo.places.fsq' },
+    { label: 'Foursquare', value: 'org.atgeo.places.foursquare' },
     { label: 'Overture Maps', value: 'org.atgeo.places.overture' },
   ];
 
