@@ -45,8 +45,8 @@
   const map = new maplibregl.Map({
     container: container,
     style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json',
-    center: [-122.4194, 37.7749],
-    zoom: 12,
+    center: [-122.4375, 37.7625],
+    zoom: 11.25,
   });
 
   let markers = [];
