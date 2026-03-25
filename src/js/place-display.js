@@ -1,11 +1,7 @@
 // Place display implementation
 
 (function () {
-  const GETRECORD_URL =
-    'https://places.atgeo.org/xrpc/com.atproto.repo.getRecord';
-
   function highlightJson(json) {
-    // Escape HTML first so literal < > & in values don't break markup.
     const escaped = json
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
@@ -28,14 +24,12 @@
     );
   }
 
-  function parseAtUri(uri) {
-    // at://repo/collection/rkey
-    const parts = (uri || '').split('/');
-    return {
-      repo: parts[2] || null,
-      collection: parts[3] || null,
-      rkey: parts[4] || null,
-    };
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   function getPlaceName(record) {
@@ -48,6 +42,17 @@
     return null;
   }
 
+  function getPrimaryType(record) {
+    const labels = record?.value?.attributes?.fsq_category_labels;
+    if (Array.isArray(labels) && labels.length > 0) {
+      const parts = labels[0].split('>');
+      return parts[parts.length - 1].trim();
+    }
+    return null;
+  }
+
+  let lastResults = [];
+
   function renderRecord(data) {
     const container = document.getElementById('place-display');
     if (!container) return;
@@ -55,21 +60,62 @@
     const name = getPlaceName(data) || 'Place';
     const json = JSON.stringify(data, null, 2);
 
-    container.innerHTML =
-      '<h3 class="place-display-name">' +
-      escapeHtml(name) +
-      '</h3>' +
-      '<pre class="place-display-json"><code>' +
-      highlightJson(json) +
-      '</code></pre>';
+    container.innerHTML = '';
+
+    if (lastResults.length > 0) {
+      const back = document.createElement('a');
+      back.className = 'place-display-back';
+      back.href = '#';
+      back.textContent = '\u2190 Back to results';
+      back.addEventListener('click', (e) => {
+        e.preventDefault();
+        renderResultsList(lastResults);
+        document.dispatchEvent(new CustomEvent('results-refocus'));
+      });
+      container.appendChild(back);
+    }
+
+    const heading = document.createElement('h3');
+    heading.className = 'place-display-name';
+    heading.textContent = name;
+    container.appendChild(heading);
+
+    const pre = document.createElement('pre');
+    pre.className = 'place-display-json';
+    pre.innerHTML = '<code>' + highlightJson(json) + '</code>';
+    container.appendChild(pre);
   }
 
-  function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+  function renderResultsList(records) {
+    const container = document.getElementById('place-display');
+    if (!container) return;
+
+    if (!records || records.length === 0) {
+      showInitialState();
+      return;
+    }
+
+    const ul = document.createElement('ul');
+    ul.className = 'place-results-list';
+
+    records.forEach(record => {
+      const name = getPlaceName(record) || '(unnamed)';
+      const type = getPrimaryType(record);
+
+      const li = document.createElement('li');
+      li.innerHTML =
+        '<span class="place-result-name">' + escapeHtml(name) + '</span>' +
+        (type ? '<span class="place-result-type">' + escapeHtml(type) + '</span>' : '');
+      li.addEventListener('click', () => {
+        document.dispatchEvent(
+          new CustomEvent('place-selected', { detail: record })
+        );
+      });
+      ul.appendChild(li);
+    });
+
+    container.innerHTML = '';
+    container.appendChild(ul);
   }
 
   function showInitialState() {
@@ -79,41 +125,19 @@
       '<p class="place-display-hint">Select a place on the map to view its record.</p>';
   }
 
-  async function fetchAndDisplay(detail) {
-    const parsed = parseAtUri(detail.uri);
-
-    let data = null;
-
-    if (parsed.repo && parsed.collection && parsed.rkey) {
-      const url = new URL(GETRECORD_URL);
-      url.searchParams.set('repo', parsed.repo);
-      url.searchParams.set('collection', parsed.collection);
-      url.searchParams.set('rkey', parsed.rkey);
-
-      try {
-        const response = await fetch(url.toString());
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        data = await response.json();
-      } catch (err) {
-        console.warn('place-display: getRecord failed, using event data', err);
-        data = detail;
-      }
-    } else {
-      data = detail;
-    }
-
-    renderRecord(data);
-  }
+  document.addEventListener('search-results', function (event) {
+    lastResults = event.detail || [];
+    renderResultsList(lastResults);
+  });
 
   document.addEventListener('place-selected', function (event) {
     const detail = event.detail;
     if (!detail) return;
-    fetchAndDisplay(detail);
+    renderRecord(detail);
   });
 
   document.addEventListener('DOMContentLoaded', showInitialState);
 
-  // If DOMContentLoaded already fired (script loaded late), run immediately.
   if (
     document.readyState === 'interactive' ||
     document.readyState === 'complete'
