@@ -8,9 +8,10 @@ title: "ATGeo: Places for ATProtocol"
 
 ATGeo provides a `Place` lexicon for ATProtocol, and a lookup service for geographic points of interest that uses that lexicon.
 
+<div class="map-layout">
 {% mapDemo %}
-
 {% placeDisplay %}
+</div>
 
 ## Gazetteer
 
@@ -24,8 +25,47 @@ The gazetteer service is built using Free Software and free data. The public ser
 
 Here's an example of a record from `org.atgeo.places.foursquare`:
 
-```
-...
+```json
+{
+  "$type": "org.atgeo.place",
+  "collection": "org.atgeo.places.foursquare",
+  "rkey": "4460d38bf964a5200a331fe3",
+  "names": [
+    { "priority": 0, "text": "Alamo Square" }
+  ],
+  "locations": [
+    {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.776146",
+      "longitude": "-122.433898"
+    },
+    {
+      "$type": "community.lexicon.location.address",
+      "country": "US",
+      "locality": "San Francisco",
+      "postalCode": "94117",
+      "region": "CA",
+      "street": "Steiner St"
+    }
+  ],
+  "attributes": {
+    "fsq_place_id": "4460d38bf964a5200a331fe3",
+    "fsq_category_ids": [
+      "4bf58dd8d48988d163941735",
+      "4bf58dd8d48988d1e7941735",
+      "4bf58dd8d48988d1e5941735"
+    ],
+    "fsq_category_labels": [
+      "Landmarks and Outdoors > Park",
+      "Landmarks and Outdoors > Park > Playground",
+      "Landmarks and Outdoors > Park > Dog Park"
+    ],
+    "tel": "(415) 831-2700",
+    "website": "http://sfrecpark.org/alamo-square",
+    "date_created": "2006-05-09",
+    "date_refreshed": "2025-09-07"
+  }
+}
 ```
 
 <!-- TODO: explain how each field works -->
