@@ -108,16 +108,20 @@
   async function doSearch() {
     const q = queryInput.value.trim();
     const collection = collectionSelect.value;
-    const center = map.getCenter();
 
     clearError();
     clearMarkers();
     document.dispatchEvent(new CustomEvent('search-results', { detail: [] }));
 
+    const bounds = map.getBounds();
     const params = new URLSearchParams({
       collection,
-      latitude: center.lat,
-      longitude: center.lng,
+      bbox: [
+        bounds.getWest(),
+        bounds.getSouth(),
+        bounds.getEast(),
+        bounds.getNorth(),
+      ].join(','),
       limit: 10,
     });
     if (q) params.set('q', q);
