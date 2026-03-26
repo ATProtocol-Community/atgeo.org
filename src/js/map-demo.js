@@ -1,9 +1,6 @@
 // Map demo implementation
 
 (function () {
-  const GETRECORD_URL =
-    'https://places.atgeo.org/xrpc/com.atproto.repo.getRecord';
-
   const container = document.getElementById('map-demo');
   if (!container) return;
 
@@ -53,8 +50,6 @@
   });
 
   let markers = [];
-  // Cache of full records keyed by URI
-  const recordCache = {};
 
   function clearMarkers() {
     markers.forEach(m => m.remove());
@@ -75,34 +70,6 @@
     document.dispatchEvent(
       new CustomEvent('place-selected', { detail: record })
     );
-  }
-
-  async function fetchFullRecord(searchRecord) {
-    const uri = searchRecord.uri;
-    if (recordCache[uri]) return recordCache[uri];
-
-    const collection = searchRecord.value?.collection;
-    const rkey = searchRecord.value?.rkey;
-    if (!collection || !rkey) {
-      recordCache[uri] = searchRecord;
-      return searchRecord;
-    }
-
-    try {
-      const url = new URL(GETRECORD_URL);
-      url.searchParams.set('repo', 'gazetteer.social');
-      url.searchParams.set('collection', collection);
-      url.searchParams.set('rkey', rkey);
-      const resp = await fetch(url.toString());
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
-      const data = await resp.json();
-      recordCache[uri] = data;
-      return data;
-    } catch (err) {
-      console.warn('Failed to fetch full record', uri, err);
-      recordCache[uri] = searchRecord;
-      return searchRecord;
-    }
   }
 
   async function doSearch() {
@@ -139,7 +106,6 @@
     }
 
     const records = data.records || [];
-    const fetchPromises = [];
 
     records.forEach(record => {
       const locations = record?.value?.locations || [];
@@ -149,9 +115,6 @@
       if (!geoLoc || geoLoc.latitude == null || geoLoc.longitude == null) return;
 
       const name = record?.value?.names?.[0]?.text || '(unnamed)';
-
-      fetchPromises.push(fetchFullRecord(record));
-
       const popup = new maplibregl.Popup({ offset: 25 }).setText(name);
 
       const marker = new maplibregl.Marker()
@@ -161,17 +124,13 @@
 
       marker.getElement().addEventListener('click', (e) => {
         e.stopPropagation();
-        const cached = recordCache[record.uri];
-        selectPlace(cached || record);
+        selectPlace(record);
       });
 
       markers.push(marker);
     });
 
-    // Once all full records are fetched, send them to the results panel
-    Promise.all(fetchPromises).then(fullRecords => {
-      document.dispatchEvent(new CustomEvent('search-results', { detail: fullRecords }));
-    });
+    document.dispatchEvent(new CustomEvent('search-results', { detail: records }));
 
     if (markers.length > 0) {
       const bounds = new maplibregl.LngLatBounds();
