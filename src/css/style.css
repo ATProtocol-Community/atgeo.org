@@ -577,6 +577,10 @@ input[type="button"]:disabled {
   flex-shrink: 0;
 }
 
+.nav-toggle:focus {
+  box-shadow: none;
+}
+
 .nav-toggle span {
   display: block;
   width: 1rem;
@@ -584,6 +588,15 @@ input[type="button"]:disabled {
   background: #555;
   position: absolute;
   left: calc(50% - 0.5rem);
+}
+
+.sidebar-open .nav-toggle {
+  background: #333;
+  border-color: #333;
+}
+
+.sidebar-open .nav-toggle span {
+  background: #fff;
 }
 
 .nav-toggle span:nth-child(1) { top: 0.45rem; }
