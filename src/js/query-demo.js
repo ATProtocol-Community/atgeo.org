@@ -36,7 +36,7 @@
             <input type="number" name="limit" id="qd-limit" value="5" min="1" max="100" />
           </label>
         </div>
-        <button type="submit" class="query-button" id="qd-run">Run Query</button>
+        <button type="submit" class="icon-btn icon-btn-wide" id="qd-run" aria-label="Run Query" title="Run Query"><img src="/assets/search-alt-1-532551.svg" alt="" width="16" height="16"></button>
       </form>
       <div class="query-url" id="qd-url-display"></div>
       <div class="query-results" id="qd-results"></div>
