@@ -7,55 +7,7 @@ title: "Overture"
 
 Collection: `org.atgeo.places.overture`
 
-ATGeo imports points of interest from the [Overture Maps](https://docs.overturemaps.org/) places dataset, an open data project providing freely available global map data.
-
-## Attributes
-
-The following fields appear in the `attributes` object of Overture place records:
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Overture's unique place identifier |
-| `categories` | object | Place categories (see below) |
-| `names` | object | Overture name variants (see below) |
-| `brand` | object | Brand information: `names` (with `primary`, `common`, `rules`) and `wikidata` ID |
-| `confidence` | string | Overture's confidence score for the record (0–1) |
-| `phones` | string[] | Phone numbers |
-| `emails` | string[] | Email addresses |
-| `websites` | string[] | Website URLs |
-| `socials` | string[] | Social media profile URLs |
-| `sources` | object[] | Provenance information (see below) |
-| `version` | integer | Record version number |
-
-### `categories`
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `primary` | string | Primary category (e.g., `"coffee_shop"`, `"community_services_non_profits"`) |
-| `alternate` | string[] | Additional categories (e.g., `["cafe", "bakery"]`) |
-
-### `names`
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `primary` | string | Primary name in the Overture dataset |
-| `common` | object | Common name translations (may be null) |
-| `rules` | object | Name rules/variants (may be null) |
-
-Note: The top-level `name` field in the Place record holds the primary name. The `attributes.names` object contains Overture's own name metadata.
-
-### `sources`
-
-Each entry in the `sources` array describes where the data came from:
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `dataset` | string | Source dataset (e.g., `"meta"`, `"Overture"`) |
-| `record_id` | string | ID in the source dataset |
-| `confidence` | number | Source-level confidence score |
-| `license` | string | Data license (e.g., `"CDLA-Permissive-2.0"`) |
-| `property` | string | Which property this source applies to |
-| `update_time` | string | When the source data was last updated (ISO 8601) |
+ATGeo imports points of interest from the [Overture Maps](https://docs.overturemaps.org/) places dataset, an open data project providing freely available global map data. The places theme is licensed under the [CDLA Permissive 2.0](https://cdla.dev/permissive-2-0/) license. See the Overture [attribution documentation](https://docs.overturemaps.org/attribution/) for details.
 
 ## Example record
 
@@ -119,3 +71,51 @@ Each entry in the `sources` array describes where the data came from:
   }
 }
 ```
+
+## Attributes
+
+The following fields appear in the `attributes` object of Overture place records:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Overture's unique place identifier |
+| `categories` | object | Place categories (see below) |
+| `names` | object | Overture name variants (see below) |
+| `brand` | object | Brand information: `names` (with `primary`, `common`, `rules`) and `wikidata` ID |
+| `confidence` | string | Overture's confidence score for the record (0–1) |
+| `phones` | string[] | Phone numbers |
+| `emails` | string[] | Email addresses |
+| `websites` | string[] | Website URLs |
+| `socials` | string[] | Social media profile URLs |
+| `sources` | object[] | Provenance information (see below) |
+| `version` | integer | Record version number |
+
+### `categories`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `primary` | string | Primary category (e.g., `"coffee_shop"`, `"community_services_non_profits"`) |
+| `alternate` | string[] | Additional categories (e.g., `["cafe", "bakery"]`) |
+
+### `names`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `primary` | string | Primary name in the Overture dataset |
+| `common` | object | Common name translations (may be null) |
+| `rules` | object | Name rules/variants (may be null) |
+
+Note: The top-level `name` field in the Place record holds the primary name. The `attributes.names` object contains Overture's own name metadata.
+
+### `sources`
+
+Each entry in the `sources` array describes where the data came from:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `dataset` | string | Source dataset (e.g., `"meta"`, `"Overture"`) |
+| `record_id` | string | ID in the source dataset |
+| `confidence` | number | Source-level confidence score |
+| `license` | string | Data license (e.g., `"CDLA-Permissive-2.0"`) |
+| `property` | string | Which property this source applies to |
+| `update_time` | string | When the source data was last updated (ISO 8601) |

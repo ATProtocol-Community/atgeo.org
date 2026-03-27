@@ -514,6 +514,24 @@ input[type="button"]:disabled {
   overflow-y: auto;
 }
 
+.sidebar-heading {
+  padding: 0 1.25rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.sidebar-heading a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.sidebar-rule {
+  border: none;
+  border-top: 1px solid #d8d8d2;
+  margin: 0.75rem 1.25rem;
+}
+
 .sidebar ul {
   list-style: none;
   padding-left: 0;

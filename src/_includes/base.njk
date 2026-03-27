@@ -21,6 +21,8 @@
         { url: "/help/",       label: "Help Wanted" }
       ] %}
       <nav class="sidebar" aria-label="Site navigation">
+        <div class="sidebar-heading"><a href="/">ATGeo.org</a></div>
+        <hr class="sidebar-rule" />
         <ul>
           {% for item in navItems %}
           <li{% if page.url == item.url %} aria-current="page"{% endif %}>
