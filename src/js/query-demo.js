@@ -35,9 +35,9 @@
             <span class="query-label">limit</span>
             <input type="number" name="limit" id="qd-limit" value="5" min="1" max="100" />
           </label>
+          <button type="button" class="icon-btn" id="qd-locate" aria-label="Use my location" title="Use my location"><img src="/assets/location-arrow-532530.svg" alt="" width="16" height="16"></button>
+          <button type="submit" class="icon-btn icon-btn-wide" id="qd-run" aria-label="Run Query" title="Run Query"><img src="/assets/search-alt-1-532551.svg" alt="" width="16" height="16"></button>
         </div>
-        <button type="button" class="icon-btn" id="qd-locate" aria-label="Use my location" title="Use my location"><img src="/assets/location-arrow-532530.svg" alt="" width="16" height="16"></button>
-        <button type="submit" class="icon-btn icon-btn-wide" id="qd-run" aria-label="Run Query" title="Run Query"><img src="/assets/search-alt-1-532551.svg" alt="" width="16" height="16"></button>
       </form>
       <div class="query-url" id="qd-url-display"></div>
       <div class="query-results" id="qd-results"></div>
