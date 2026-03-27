@@ -3,6 +3,10 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("src/js");
   eleventyConfig.addPassthroughCopy("src/CNAME");
 
+  eleventyConfig.addShortcode("mapSearch", function () {
+    return '<div id="map-search" class="widget"></div>';
+  });
+
   eleventyConfig.addShortcode("mapDemo", function () {
     return '<div id="map-demo" class="widget"></div>';
   });

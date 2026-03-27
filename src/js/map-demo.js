@@ -4,12 +4,9 @@
   const container = document.getElementById('map-demo');
   if (!container) return;
 
-  // Ensure the container is positioned so absolute children work
-  if (getComputedStyle(container).position === 'static') {
-    container.style.position = 'relative';
-  }
+  // Build search controls into the separate search bar
+  const searchBar = document.getElementById('map-search');
 
-  // Build search controls
   const controls = document.createElement('div');
   controls.className = 'map-search';
 
@@ -39,14 +36,14 @@
   controls.appendChild(collectionSelect);
   controls.appendChild(searchBtn);
   controls.appendChild(errorMsg);
-  container.appendChild(controls);
+  if (searchBar) searchBar.appendChild(controls);
 
   // Initialize map
   const map = new maplibregl.Map({
     container: container,
     style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json',
     center: [-122.4375, 37.7625],
-    zoom: 11.25,
+    zoom: 10.75,
   });
 
   let markers = [];
@@ -114,7 +111,7 @@
       );
       if (!geoLoc || geoLoc.latitude == null || geoLoc.longitude == null) return;
 
-      const name = record?.value?.names?.[0]?.text || '(unnamed)';
+      const name = record?.value?.name || '(unnamed)';
       const popup = new maplibregl.Popup({ offset: 25 }).setText(name);
 
       const marker = new maplibregl.Marker()
@@ -153,7 +150,7 @@
       l => l.$type && l.$type.toLowerCase().includes('geo')
     );
     if (geoLoc && geoLoc.latitude != null && geoLoc.longitude != null) {
-      map.flyTo({ center: [geoLoc.longitude, geoLoc.latitude], zoom: 15 });
+      map.flyTo({ center: [geoLoc.longitude, geoLoc.latitude], zoom: 16 });
     }
   });
 

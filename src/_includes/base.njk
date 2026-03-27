@@ -3,17 +3,43 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ATGeo — Places for ATProtocol</title>
-    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" />
+    <title>{% if title %}{{ title }} — ATGeo{% else %}ATGeo — Places for ATProtocol{% endif %}</title>
+    {% if page.url == "/" %}<link rel="stylesheet" href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" />{% endif %}
     <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body>
-    <main class="content">
-      {{ content | safe }}
-    </main>
+    <div class="page-layout">
+      {% set navItems = [
+        { url: "/",            label: "Overview" },
+        { url: "/usage/",      label: "Usage" },
+        { url: "/place/",      label: "Data Model" },
+        { url: "/query-api/",  label: "Query API" },
+        { url: "/foursquare/", label: "Foursquare" },
+        { url: "/overture/",   label: "Overture" },
+        { url: "/osm/",        label: "OSM" },
+        { url: "/known-gaps/", label: "Known Gaps" },
+        { url: "/help/",       label: "Help Wanted" }
+      ] %}
+      <nav class="sidebar" aria-label="Site navigation">
+        <ul>
+          {% for item in navItems %}
+          <li{% if page.url == item.url %} aria-current="page"{% endif %}>
+            <a href="{{ item.url }}">{{ item.label }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+      </nav>
+      <main class="content{% if wide %} content-wide{% endif %}">
+        {{ content | safe }}
+      </main>
+    </div>
+    {% if page.url == "/" %}
     <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
     <script src="/js/map-demo.js" defer></script>
     <script src="/js/place-display.js" defer></script>
+    {% endif %}
+    {% if page.url == "/" or page.url == "/query-api/" %}
     <script src="/js/query-demo.js" defer></script>
+    {% endif %}
   </body>
 </html>

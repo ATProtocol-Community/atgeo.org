@@ -34,20 +34,28 @@
 
   function getPlaceName(record) {
     try {
-      const names = record.value && record.value.names;
-      if (Array.isArray(names) && names.length > 0) {
-        return names[0].text || null;
-      }
+      return record?.value?.name || null;
     } catch (_) {}
     return null;
   }
 
   function getPrimaryType(record) {
-    const labels = record?.value?.attributes?.fsq_category_labels;
+    const attrs = record?.value?.attributes;
+    if (!attrs) return null;
+
+    // Foursquare: path-style labels
+    const labels = attrs.fsq_category_labels;
     if (Array.isArray(labels) && labels.length > 0) {
       const parts = labels[0].split('>');
       return parts[parts.length - 1].trim();
     }
+
+    // Overture: categories.primary
+    const primary = attrs.categories?.primary;
+    if (primary) {
+      return primary.replace(/_/g, ' ');
+    }
+
     return null;
   }
 
@@ -58,7 +66,7 @@
     if (!container) return;
 
     const name = getPlaceName(data) || 'Place';
-    const json = JSON.stringify(data, null, 2);
+    const json = JSON.stringify(data.value || data, null, 2);
 
     container.innerHTML = '';
 
