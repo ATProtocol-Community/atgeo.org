@@ -85,6 +85,12 @@ Geographic coordinates.
 - `latitude` (string) — Decimal latitude.
 - `longitude` (string) — Decimal longitude.
 
+#### `community.lexicon.location.hthree`
+
+An [H3](https://h3geo.org/) hexagonal grid cell.
+- `value` (string) — The H3-encoded cell index.
+- `name` (string, optional) — A name for the location.
+
 #### `community.lexicon.location.address`
 
 Postal address.
@@ -93,6 +99,14 @@ Postal address.
 - `postalCode` (string) — Postal or ZIP code.
 - `region` (string) — State, province, or region code.
 - `street` (string) — Street address.
+
+#### `community.lexicon.location.bbox`
+
+A bounding box.
+- `west` (string) — Western longitude.
+- `south` (string) — Southern latitude.
+- `east` (string) — Eastern longitude.
+- `north` (string) — Northern latitude.
 
 ### `attributes`
 
