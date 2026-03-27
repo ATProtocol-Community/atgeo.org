@@ -36,6 +36,7 @@
             <input type="number" name="limit" id="qd-limit" value="5" min="1" max="100" />
           </label>
         </div>
+        <button type="button" class="icon-btn" id="qd-locate" aria-label="Use my location" title="Use my location"><img src="/assets/location-arrow-532530.svg" alt="" width="16" height="16"></button>
         <button type="submit" class="icon-btn icon-btn-wide" id="qd-run" aria-label="Run Query" title="Run Query"><img src="/assets/search-alt-1-532551.svg" alt="" width="16" height="16"></button>
       </form>
       <div class="query-url" id="qd-url-display"></div>
@@ -148,6 +149,31 @@
     // Update URL preview on any input change
     container.addEventListener('input', updateURLDisplay);
     container.addEventListener('change', updateURLDisplay);
+
+    // Geolocate button fills in lat/lon fields
+    document.getElementById('qd-locate').addEventListener('click', function () {
+      const btn = this;
+      if (btn.disabled) return;
+      btn.disabled = true;
+
+      if (!navigator.geolocation) {
+        btn.disabled = false;
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          document.getElementById('qd-latitude').value = position.coords.latitude;
+          document.getElementById('qd-longitude').value = position.coords.longitude;
+          updateURLDisplay();
+          btn.disabled = false;
+        },
+        function () {
+          btn.disabled = false;
+        },
+        { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+      );
+    });
 
     // Run query on form submit
     document.getElementById('query-demo-form').addEventListener('submit', function (e) {
