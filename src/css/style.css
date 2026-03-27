@@ -217,6 +217,12 @@ th {
   line-height: 1;
 }
 
+.query-form-fields .icon-btn {
+  font-size: 0.9rem;
+  padding: 0.35em 0.5em;
+  line-height: 1.4;
+}
+
 .icon-btn.icon-btn-wide {
   padding: 0.4em 0.9em;
 }
