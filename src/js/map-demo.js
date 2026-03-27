@@ -29,13 +29,17 @@
 
   const geolocateBtn = document.createElement('button');
   geolocateBtn.type = 'button';
-  geolocateBtn.className = 'geolocate-btn';
+  geolocateBtn.className = 'icon-btn';
   geolocateBtn.setAttribute('aria-label', 'Use my location');
   geolocateBtn.setAttribute('title', 'Use my location');
-  geolocateBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><line x1="8" y1="1" x2="8" y2="4"/><line x1="8" y1="12" x2="8" y2="15"/><line x1="1" y1="8" x2="4" y2="8"/><line x1="12" y1="8" x2="15" y2="8"/></svg>';
+  geolocateBtn.innerHTML = '<img src="/assets/location-arrow-532530.svg" alt="" width="16" height="16">';
 
   const searchBtn = document.createElement('button');
-  searchBtn.textContent = 'Search';
+  searchBtn.type = 'button';
+  searchBtn.className = 'icon-btn icon-btn-wide';
+  searchBtn.setAttribute('aria-label', 'Search');
+  searchBtn.setAttribute('title', 'Search');
+  searchBtn.innerHTML = '<img src="/assets/search-alt-1-532551.svg" alt="" width="16" height="16">';
 
   const errorMsg = document.createElement('span');
   errorMsg.className = 'map-search-error';
@@ -166,7 +170,7 @@
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
         const shouldSearch = queryInput.value.trim() !== '';
-        const zoom = Math.max(14, map.getZoom());
+        const zoom = Math.max(12, map.getZoom());
 
         function moveEndHandler() {
           clearTimeout(fallbackTimer);

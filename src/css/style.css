@@ -208,19 +208,25 @@ th {
   flex: 1;
 }
 
-.geolocate-btn {
+.icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.35em;
+  padding: 0.4em;
   min-width: 0;
   line-height: 1;
 }
 
-.geolocate-btn svg {
+.icon-btn.icon-btn-wide {
+  padding: 0.4em 0.9em;
+}
+
+.icon-btn svg,
+.icon-btn img {
   display: block;
   width: 16px;
   height: 16px;
+  filter: invert(1);
 }
 
 .map-search-error {
