@@ -1,15 +1,17 @@
 ---
 layout: base.njk
-title: "Known Gaps"
+title: "Bugs & Known Gaps"
 ---
 
-# Known gaps & missing pieces
+# Bugs, known gaps, & missing pieces
 
-**Search result ranking** from the **places.atgeo.org** gazetteer service can be iffy. Known issue, work-in-progress. Generally, the search results have been optimized to make the service usable as a local venue data source.
+**Search result ranking** from the **places.atgeo.org** gazetteer service can be iffy. Known issue, work-in-progress. Generally, the search results have been optimized to make the service usable as a local venue data source. OpenStreetMap seems to do better than the other two.
 
 **Data quality** will vary by source. Foursquare's data quality is pretty sketchy and hasn't been updated since late 2025. OpenStreetMap is fairly comprehensive and kept up-to-date by a large army of volunteers, but the cadence of updates is highly variable. Overture Maps is a free dataset that is managed by a corporate consortium on a monthly schedule, but its quality may be somewhere in between that of OSM and Foursquare.
 
 **Place categories** are hard. "What kind of place is it?" is a question that reaches deep into the heart of how humans organize ourselves socially and economically. People in different cultures think about and use places differently. Foursquare and Overture Maps each have over 1,000 place categories, and they're not exactly the same. OpenStreetMap's tagging structure is even more complex than that. Our answer right now is to punt and ask developers to lean into the details of whatever reference dataset they're adopting.
+
+**Place relations** are an important metadata category. "This place in OpenStreetMap is the same as this place in Overture Maps" is sometimes a very useful piece of information. "This place contains that place" and "This place used to be that place" are also often important. Right now the ATGeo lexicon doesn't represent these *yet* but it needs to.
 
 **Address geocoding** is outside the scope of ATGeo's PoI lookups. Free services like Nominatim do allow developers to geocode street addresses. The `community.lexicon.geo.address` lexicon provides a way to represent addresses in ATProtocol, and can be composed into `org.atgeo.Place` objects. One possible direction would be for ATGeo to host an ATProtcol-adapted version of Nominatim.
 

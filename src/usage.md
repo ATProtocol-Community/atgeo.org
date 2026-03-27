@@ -9,7 +9,7 @@ title: "Usage"
 
 An ATGeo *Gazetteer* is an XRPC lookup service that serves authoritative place data in ATGeo `Place` formatted JSON.
 
-The **places.atgeo.org** gazetteer lookup service allows you to pull points of interest (PoIs) from either Foursquare Open Source Places or Overture Maps. OpenStreetMap and Who's on First are coming shortly.
+The **places.atgeo.org** gazetteer lookup service allows you to pull points of interest (PoIs) from Foursquare Open Source Places, Overture Maps, and OpenStreetMap. Who's on First is coming shortly.
 
 The gazetteer service is built using Free Software and Free Data. The public server is community supported, so please go it easy on it, or consider [deploying your own](https://github.com/schuyler/garganorn/) if your app takes off.
 
