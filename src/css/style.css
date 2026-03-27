@@ -14,7 +14,6 @@ html {
 body {
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   font-size: 1rem;
@@ -26,6 +25,7 @@ body {
 /* ===== Content Column ===== */
 
 .content {
+  width: 100%;
   min-width: 0;
   max-width: 960px;
   margin: 0 auto;
