@@ -19,6 +19,11 @@ module.exports = function (eleventyConfig) {
     return '<div id="query-demo" class="widget"></div>';
   });
 
+  eleventyConfig.amendLibrary("md", (mdLib) => {
+    mdLib.renderer.rules.table_open = () => '<div class="table-wrap"><table>';
+    mdLib.renderer.rules.table_close = () => '</table></div>';
+  });
+
   return {
     dir: {
       input: "src",
