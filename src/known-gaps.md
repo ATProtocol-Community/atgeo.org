@@ -19,6 +19,8 @@ title: "Bugs & Known Gaps"
 
 **Lines and polygons** are also not a focus for the ATGeo Lexicon at the moment. We could add complex geometries using raw GeoJSON or WKT, but the data would probably need to be stored on-protocol in blob format. Right now, it would be easier by far to just take the reference IDs returned by the gazetteer service and look them up in the original data source.
 
+**Data licensing** and provenance are not well captured in the place outputs. This needs to be corrected (particularly for OSM because of the ODbL terms).
+
 **Private places** get into questions about private data that the wider ATProtocol community is still trying to address. The `Place` lexicon allows you to specify places by name, while providing only a grid cell location or even no location at all. When publishing these kinds of records, users concerned about privacy and security will have to share physical locations out-of-band.
 
 All of these gaps are fair game for future work if the community needs it.
