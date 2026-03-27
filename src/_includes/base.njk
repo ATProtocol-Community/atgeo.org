@@ -23,6 +23,9 @@
       <nav class="sidebar" aria-label="Site navigation">
         <div class="sidebar-heading"><a href="/">ATGeo.org</a></div>
         <hr class="sidebar-rule" />
+        <button class="nav-toggle" aria-label="Menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
         <ul>
           {% for item in navItems %}
           <li{% if page.url == item.url %} aria-current="page"{% endif %}>
@@ -43,5 +46,6 @@
     {% if page.url == "/" or page.url == "/query-api/" %}
     <script src="/js/query-demo.js" defer></script>
     {% endif %}
+    <script src="/js/nav-toggle.js" defer></script>
   </body>
 </html>
