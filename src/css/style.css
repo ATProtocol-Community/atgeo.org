@@ -208,6 +208,21 @@ th {
   flex: 1;
 }
 
+.geolocate-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35em;
+  min-width: 0;
+  line-height: 1;
+}
+
+.geolocate-btn svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
 .map-search-error {
   color: #dc2626;
   font-size: 0.8rem;
