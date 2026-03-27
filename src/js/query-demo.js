@@ -5,6 +5,7 @@
 
   const COLLECTIONS = [
     { label: 'Foursquare', value: 'org.atgeo.places.foursquare' },
+    { label: 'OpenStreetMap', value: 'org.atgeo.places.osm' },
     { label: 'Overture Maps', value: 'org.atgeo.places.overture' },
   ];
 

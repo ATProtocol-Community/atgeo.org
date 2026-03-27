@@ -39,21 +39,44 @@
     return null;
   }
 
+  function titleCase(str) {
+    return str.replace(/\b\w/g, c => c.toUpperCase());
+  }
+
   function getPrimaryType(record) {
+    const collection = record?.value?.collection;
     const attrs = record?.value?.attributes;
     if (!attrs) return null;
 
-    // Foursquare: path-style labels
-    const labels = attrs.fsq_category_labels;
-    if (Array.isArray(labels) && labels.length > 0) {
-      const parts = labels[0].split('>');
-      return parts[parts.length - 1].trim();
+    if (collection === 'org.atgeo.places.foursquare') {
+      const labels = attrs.fsq_category_labels;
+      if (Array.isArray(labels) && labels.length > 0) {
+        const parts = labels[0].split('>');
+        return parts[parts.length - 1].trim();
+      }
     }
 
-    // Overture: categories.primary
-    const primary = attrs.categories?.primary;
-    if (primary) {
-      return primary.replace(/_/g, ' ');
+    if (collection === 'org.atgeo.places.overture') {
+      const primary = attrs.categories?.primary;
+      if (primary) {
+        return titleCase(primary.replace(/_/g, ' '));
+      }
+    }
+
+    if (collection === 'org.atgeo.places.osm') {
+      // Priority order matches garganorn/osm_filter.yaml
+      const osmKeys = [
+        'amenity', 'shop', 'tourism', 'leisure', 'healthcare', 'office',
+        'craft', 'club', 'emergency', 'diplomatic', 'historic', 'military',
+        'aeroway', 'railway', 'highway', 'waterway', 'natural', 'geological',
+        'man_made', 'building', 'boundary', 'landuse', 'place', 'power',
+      ];
+      for (const key of osmKeys) {
+        const val = attrs[key];
+        if (typeof val === 'string' && val !== 'yes') {
+          return titleCase(val.replace(/_/g, ' '));
+        }
+      }
     }
 
     return null;
