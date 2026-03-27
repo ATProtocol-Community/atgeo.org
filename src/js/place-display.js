@@ -109,6 +109,13 @@
     const heading = document.createElement('h3');
     heading.className = 'place-display-name';
     heading.textContent = name;
+    const type = getPrimaryType(data);
+    if (type) {
+      const typeSpan = document.createElement('span');
+      typeSpan.className = 'place-result-type';
+      typeSpan.textContent = type;
+      heading.appendChild(typeSpan);
+    }
     container.appendChild(heading);
 
     const pre = document.createElement('pre');

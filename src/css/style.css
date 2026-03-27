@@ -491,6 +491,10 @@ input[type="button"]:disabled {
 }
 
 .place-display-name {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
   margin: 0 0 0.5em;
   font-size: 1.1rem;
 }

@@ -87,7 +87,7 @@
         bounds.getEast(),
         bounds.getNorth(),
       ].join(','),
-      limit: 10,
+      limit: 12,
     });
     if (q) params.set('q', q);
 
