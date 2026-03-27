@@ -6,7 +6,7 @@ wide: true
 
 # ATGeo: Places for ATProtocol
 
-ATGeo provides a `Place` lexicon for ATProtocol, and a lookup service for geographic points of interest that uses that lexicon.
+ATGeo provides a `Place` lexicon for ATProtocol, and a lookup service for geographic venues that implements the lexicon.
 
 {% mapSearch %}
 <div class="map-layout">
@@ -14,4 +14,4 @@ ATGeo provides a `Place` lexicon for ATProtocol, and a lookup service for geogra
 {% placeDisplay %}
 </div>
 
-The ATGeo [data model](/place/) defines how points of interest are represented. The [Query API](/query-api/) provides search access to the gazetteer. See [Usage](/usage/) for guidance on integrating the lexicon into your apps.
+The ATGeo [data model](/place/) describes how points of interest are represented. The [Query API](/query-api/) provides search access to the venue databases. See [Usage](/usage/) for guidance on integrating the lexicon into your apps.
