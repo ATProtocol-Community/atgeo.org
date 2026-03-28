@@ -197,6 +197,7 @@ th {
 
 #map-search .map-search {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.4rem;
   align-items: center;
   background: #f0f0ea;
@@ -207,6 +208,7 @@ th {
 
 #map-search .map-search input[type="text"] {
   flex: 1;
+  min-width: 0;
 }
 
 .icon-btn {
