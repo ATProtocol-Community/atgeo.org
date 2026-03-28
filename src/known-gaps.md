@@ -7,11 +7,11 @@ title: "Roadmap"
 
 ## Missing pieces we intend to fix
 
-The **Place Lexicon** is mostly feature complete but still a little rough around the edges. We need devs to pressure test it and make sure it's correct.
+The **Place [Lexicon](/place/)** is mostly feature complete but still a little rough around the edges. We need devs to pressure test it and make sure it's correct.
 
 We need to build **venue lookup SDKs** in JavaScript, Swift, and Kotlin to help developers add venue lookups to their applications, while makign it as easy as possible to protect user safety.
 
-**Search result ranking** from the _places.atgeo.org_ gazetteer service can be iffy. Known issue, work-in-progress. Generally, the search results have been optimized to make the service usable as a local venue data source. OpenStreetMap seems to do better than the other two.
+**Search result ranking** from the [places.atgeo.org](/query-api/) gazetteer service can be iffy. Known issue, work-in-progress. Generally, the search results have been optimized to make the service usable as a local venue data source. OpenStreetMap seems to do better than the other two.
 
 **Reverse geocoding** ("What city / province / country is this PoI located in?") is on tbe roadmap. Some datasets include this information with every PoI record; some systems like Who's on First approach this topic in detail.
 
