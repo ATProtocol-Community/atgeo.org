@@ -5,19 +5,25 @@ title: "Roadmap"
 
 # Roadmap
 
-## Missing pieces we intend to fix
+## Missing from the lexicon & venue lookup
 
 The **Place [Lexicon](/place/)** is mostly feature complete but still a little rough around the edges. We need devs to pressure test it and make sure it's correct.
 
-We need to build **venue lookup SDKs** in JavaScript, Swift, and Kotlin to help developers add venue lookups to their applications, while makign it as easy as possible to protect user safety.
+**Multilingual & variant names** are next. The data is there and the lexicon supports it; the pieces just need to be wired up.
 
-**Search result ranking** from the [places.atgeo.org](/query-api/) gazetteer service can be iffy. Known issue, work-in-progress. Generally, the search results have been optimized to make the service usable as a local venue data source. OpenStreetMap seems to do better than the other two.
+**Search result ranking** from the [places.atgeo.org](/query-api/) gazetteer service can be iffy. Generally, the search results have been optimized to make the service usable as a local venue data source. Searching for localities works less well, and famous PoIs aren't always the top ranked result. OpenStreetMap seems to do better than the other two. This will probably be a ongoing work-in-progress.
 
 **Reverse geocoding** ("What city / province / country is this PoI located in?") is on tbe roadmap. Some datasets include this information with every PoI record; some systems like Who's on First approach this topic in detail.
 
 **Concordance** will ease dataset lock-in by exposing "same as" relationships between records in different datasets thay refer to the same place.
 
 **Data licensing** and provenance are not well captured in the place outputs. This needs to be corrected (particularly for OSM because of the ODbL terms).
+
+## User safety gaps that need to be addressed
+
+The right way to store user location is to never do so automatically -- but rather to let users *select* their location from a list or a map. The API supports bounding box queries, but it needs to be extended to support **H3 grid cell queries**, so that the user's exact coordinates never need to leave the client.
+
+We therefore need to build **venue lookup SDKs** in JavaScript, Swift, and Kotlin to help developers add venue lookups to their applications, but *most importantly* to make it as easy as possible to protect user safety.
 
 ## Known bugs and intentional gaps
 
