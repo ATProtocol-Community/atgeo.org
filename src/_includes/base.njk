@@ -25,7 +25,7 @@
         { url: "/",            label: "Overview" },
         { url: "/usage/",      label: "Usage" },
         { url: "/place/",      label: "Lexicon" },
-        { url: "/query-api/",  label: "XRPC API" },
+        { url: "/api/",        label: "XRPC API" },
         { url: "/osm/",        label: "OpenStreetMap" },
         { url: "/overture/",   label: "Overture Maps" },
         { url: "/foursquare/", label: "Foursquare" },
@@ -55,7 +55,7 @@
     <script src="/js/map-demo.js" defer></script>
     <script src="/js/place-display.js" defer></script>
     {% endif %}
-    {% if page.url == "/" or page.url == "/query-api/" %}
+    {% if page.url == "/" or page.url == "/api/" %}
     <script src="/js/query-demo.js" defer></script>
     {% endif %}
     <script src="/js/nav-toggle.js" defer></script>

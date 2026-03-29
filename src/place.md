@@ -73,7 +73,13 @@ The primary name of the place (string).
 
 ### `variants`
 
-An array of alternate names or spellings for the place. May be empty.
+An array of alternate names for the place. Each variant has the following fields:
+
+- `name` (string, required) — The variant name text.
+- `type` (string, optional) — The kind of variant: `official`, `alternate`, `short`, or `colloquial`.
+- `language` (string, optional) — The language of the name, as a language code.
+
+May be empty.
 
 ### `locations`
 
@@ -114,3 +120,19 @@ An object containing source-specific fields. The structure varies by `collection
 - [Foursquare](/foursquare/)
 - [Overture](/overture/)
 - [OSM](/osm/)
+
+### `relations`
+
+An object describing relationships to other place records. Contains two optional arrays:
+
+#### `within`
+
+Administrative regions that geographically contain this place, ordered by level ascending. Each entry has:
+
+- `rkey` (string) — Collection-qualified record key (e.g. `org.atgeo.places.wof:85922583`).
+- `name` (string, optional) — Display name of the containing region.
+- `level` (integer, optional) — Administrative hierarchy level (0 = continent, 10 = country, 25 = region, 50 = locality).
+
+#### `same_as`
+
+Records in other collections or datasets that represent the same place. Each entry has the same fields as `within`.

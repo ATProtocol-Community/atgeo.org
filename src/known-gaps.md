@@ -11,7 +11,7 @@ The **Place [Lexicon](/place/)** is mostly feature complete but still a little r
 
 **Multilingual & variant names** are next. The data is there and the lexicon supports it; the pieces just need to be wired up.
 
-**Search result ranking** from the [places.atgeo.org](/query-api/) gazetteer service can be iffy. Generally, the search results have been optimized to make the service usable as a local venue data source. Searching for localities works less well, and famous PoIs aren't always the top ranked result. OpenStreetMap seems to do better than the other two. This will probably be a ongoing work-in-progress.
+**Search result ranking** from the [places.atgeo.org](/api/) gazetteer service can be iffy. Generally, the search results have been optimized to make the service usable as a local venue data source. Searching for localities works less well, and famous PoIs aren't always the top ranked result. OpenStreetMap seems to do better than the other two. This will probably be a ongoing work-in-progress.
 
 **Reverse geocoding** ("What city / province / country is this PoI located in?") is on tbe roadmap. Some datasets include this information with every PoI record; some systems like Who's on First approach this topic in detail.
 
