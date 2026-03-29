@@ -6,7 +6,7 @@ wide: true
 
 # ATGeo: Places for ATProtocol
 
-ATGeo provides a geographic place lexicon for ATProtocol, and a venue lookup service that implements the lexicon.
+ATGeo provides a geographic place lexicon for [ATProtocol](https://atproto.com/) applications, and a venue lookup service that implements the lexicon.
 
 {% mapSearch %}
 <div class="map-layout">
