@@ -5,7 +5,7 @@ title: "Lexicon"
 
 # Lexicon
 
-The `place` lexicon is ATGeo's core data structure for representing geographic places in the ATProtocol ecosystem.
+The `place` lexicon is ATGeo's core data structure for representing geographic places in the AT Protocol ecosystem.
 
 ## Example
 

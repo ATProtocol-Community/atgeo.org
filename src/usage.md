@@ -31,13 +31,13 @@ The ATGeo `Place` lexicon is designed to be _interoperable_, _composable_, _trac
 
 ### Interoperability
 
-When ATProtocol applications use the same lexicon to reference and describe places, they can reuse each other's place data, and applications can build geographic views and connections based on feeds from other applications.
+When AT Protocol applications use the same lexicon to reference and describe places, they can reuse each other's place data, and applications can build geographic views and connections based on feeds from other applications.
 
 ### Composability
 
 The ATGeo `Place` lexicon is designed to function both as the description of a place, and as a reference to a place.
 
-ATGeo lookup services, like _places.atgeo.org_, return JSON objects that can be incorporated directly into ATProtocol records without modification, because they follow the `org.atgeo.Place` lexicon definition and use the ATProtocol data model.
+ATGeo lookup services, like _places.atgeo.org_, return JSON objects that can be incorporated directly into AT Protocol records without modification, because they follow the `org.atgeo.Place` lexicon definition and use the AT Protocol data model.
 
 ### Extensibility
 

@@ -13,7 +13,7 @@ The ATGeo gazetteer provides an XRPC API for searching and retrieving geographic
 
 Base URL: `https://places.atgeo.org/xrpc`
 
-The `org.atgeo` query lexicon is implemented in [Garganorn](https://github.com/schuyler/garganorn). The public endpoint is hosted with the generous support of the [ATProtocol Community Fund](https://atprotocol.dev/community-fund/).
+The `org.atgeo` query lexicon is implemented in [Garganorn](https://github.com/schuyler/garganorn). The public endpoint is hosted with the generous support of the [AT Protocol Community Fund](https://atprotocol.dev/community-fund/).
 
 ## Methods
 
