@@ -710,10 +710,17 @@ input[type="button"]:disabled {
 
   .query-form-fields {
     flex-direction: column;
+    align-items: stretch;
   }
 
   .query-form-fields input,
   .query-form-fields select {
+    width: 100%;
+  }
+
+  #qd-latitude,
+  #qd-longitude,
+  #qd-limit {
     width: 100%;
   }
 
