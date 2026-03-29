@@ -558,11 +558,22 @@ input[type="button"]:disabled {
   font-size: 1.1rem;
   font-weight: 600;
   color: #111;
+  display: flex;
+  justify-content: center;
 }
 
 .sidebar-heading a {
   text-decoration: none;
   color: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.sidebar-icon {
+  width: 1.25em;
+  height: 1.25em;
+  flex-shrink: 0;
 }
 
 .sidebar-rule {
@@ -581,18 +592,18 @@ input[type="button"]:disabled {
   margin-bottom: 0;
 }
 
-.sidebar a {
+.sidebar ul a {
   display: block;
   padding: 0.4em 1.25rem;
   text-decoration: none;
   color: #555;
 }
 
-.sidebar a:hover {
+.sidebar ul a:hover {
   color: #2a6496;
 }
 
-.sidebar li[aria-current="page"] a {
+.sidebar ul li[aria-current="page"] a {
   font-weight: 600;
   color: #2a6496;
   border-left: 3px solid #2a6496;
@@ -681,7 +692,7 @@ input[type="button"]:disabled {
     padding: 0.35em 0.5rem;
   }
 
-  .sidebar li[aria-current="page"] a {
+  .sidebar ul li[aria-current="page"] a {
     border-left: none;
     padding-left: 0.5rem;
     border-bottom: 2px solid #2a6496;
