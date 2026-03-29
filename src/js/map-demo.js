@@ -17,9 +17,9 @@
 
   const collectionSelect = document.createElement('select');
   [
-    { label: 'OpenStreetMap', value: 'org.atgeo.places.osm' },
-    { label: 'Foursquare', value: 'org.atgeo.places.foursquare' },
-    { label: 'Overture Maps', value: 'org.atgeo.places.overture' },
+    { label: 'OSM', value: 'org.atgeo.places.osm' },
+    { label: '4SQ', value: 'org.atgeo.places.foursquare' },
+    { label: 'Overture', value: 'org.atgeo.places.overture' },
   ].forEach(({ label, value }) => {
     const opt = document.createElement('option');
     opt.value = value;
