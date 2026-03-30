@@ -124,7 +124,7 @@
 
     const records = data.records || [];
 
-    records.forEach(record => {
+    records.forEach((record, i) => {
       const locations = record?.value?.locations || [];
       const geoLoc = locations.find(
         l => l.$type && l.$type.toLowerCase().includes('geo')
@@ -139,7 +139,16 @@
         .setPopup(popup)
         .addTo(map);
 
-      marker.getElement().addEventListener('click', (e) => {
+      const el = marker.getElement();
+      el.dataset.recordIndex = String(i);
+      el.addEventListener('mouseenter', () => {
+        document.dispatchEvent(new CustomEvent('place-hover', { detail: { recordIndex: i } }));
+      });
+      el.addEventListener('mouseleave', () => {
+        document.dispatchEvent(new CustomEvent('place-unhover', { detail: { recordIndex: i } }));
+      });
+
+      el.addEventListener('click', (e) => {
         e.stopPropagation();
         selectPlace(record);
       });
@@ -225,6 +234,18 @@
     if (geoLoc && geoLoc.latitude != null && geoLoc.longitude != null) {
       map.flyTo({ center: [geoLoc.longitude, geoLoc.latitude], zoom: 16 });
     }
+  });
+
+  document.addEventListener('place-hover', function (event) {
+    const idx = event.detail.recordIndex;
+    const marker = markers.find(m => m.getElement().dataset.recordIndex === String(idx));
+    if (marker) marker.getElement().classList.add('place-hover');
+  });
+
+  document.addEventListener('place-unhover', function (event) {
+    const idx = event.detail.recordIndex;
+    const marker = markers.find(m => m.getElement().dataset.recordIndex === String(idx));
+    if (marker) marker.getElement().classList.remove('place-hover');
   });
 
   // Re-zoom to all results when navigating back

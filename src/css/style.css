@@ -508,6 +508,25 @@ input[type="button"]:disabled {
   background: rgba(42, 100, 150, 0.06);
 }
 
+/* ===== Bidirectional Hover Highlighting ===== */
+
+.maplibregl-marker {
+  transition: scale 150ms ease, filter 150ms ease;
+}
+
+.maplibregl-marker.place-hover {
+  scale: 1.3;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.place-results-list li {
+  transition: background-color 150ms ease;
+}
+
+.place-results-list li.place-hover {
+  background: rgba(42, 100, 150, 0.10);
+}
+
 .place-result-name {
   font-size: 0.9rem;
   font-weight: 500;

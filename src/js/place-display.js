@@ -136,11 +136,12 @@
     const ul = document.createElement('ul');
     ul.className = 'place-results-list';
 
-    records.forEach(record => {
+    records.forEach((record, i) => {
       const name = getPlaceName(record) || '(unnamed)';
       const type = getPrimaryType(record);
 
       const li = document.createElement('li');
+      li.dataset.recordIndex = String(i);
       li.innerHTML =
         '<span class="place-result-name">' + escapeHtml(name) + '</span>' +
         (type ? '<span class="place-result-type">' + escapeHtml(type) + '</span>' : '');
@@ -148,6 +149,12 @@
         document.dispatchEvent(
           new CustomEvent('place-selected', { detail: record })
         );
+      });
+      li.addEventListener('mouseenter', () => {
+        document.dispatchEvent(new CustomEvent('place-hover', { detail: { recordIndex: i } }));
+      });
+      li.addEventListener('mouseleave', () => {
+        document.dispatchEvent(new CustomEvent('place-unhover', { detail: { recordIndex: i } }));
       });
       ul.appendChild(li);
     });
@@ -162,6 +169,18 @@
     container.innerHTML =
       '<p class="place-display-hint">Select a place on the map to view its record.</p>';
   }
+
+  document.addEventListener('place-hover', function (event) {
+    const idx = event.detail.recordIndex;
+    const li = document.querySelector('.place-results-list li[data-record-index="' + idx + '"]');
+    if (li) li.classList.add('place-hover');
+  });
+
+  document.addEventListener('place-unhover', function (event) {
+    const idx = event.detail.recordIndex;
+    const li = document.querySelector('.place-results-list li[data-record-index="' + idx + '"]');
+    if (li) li.classList.remove('place-hover');
+  });
 
   document.addEventListener('search-results', function (event) {
     lastResults = event.detail || [];
