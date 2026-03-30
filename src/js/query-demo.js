@@ -126,6 +126,7 @@
     const url = buildURL(params);
 
     button.disabled = true;
+    button.classList.add('loading');
     showLoading(resultsEl);
 
     try {
@@ -137,6 +138,7 @@
       showError(resultsEl, err.message || 'Request failed');
     } finally {
       button.disabled = false;
+      button.classList.remove('loading');
     }
   }
 

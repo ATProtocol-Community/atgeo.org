@@ -90,6 +90,8 @@
 
     clearError();
     clearMarkers();
+    searchBtn.disabled = true;
+    searchBtn.classList.add('loading');
     document.dispatchEvent(new CustomEvent('search-results', { detail: [] }));
 
     const bounds = map.getBounds();
@@ -115,6 +117,9 @@
     } catch (err) {
       showError(`Search failed: ${err.message}`);
       return;
+    } finally {
+      searchBtn.disabled = false;
+      searchBtn.classList.remove('loading');
     }
 
     const records = data.records || [];
