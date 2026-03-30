@@ -1,12 +1,12 @@
 ---
 layout: base.njk
-title: "ATGeo: Places for ATProtocol"
+title: "ATGeo: Places for AT Protocol"
 wide: true
 ---
 
-# ATGeo: Places for ATProtocol
+# ATGeo: Places for AT Protocol
 
-ATGeo provides a geographic place lexicon for [ATProtocol](https://atproto.com/) applications, and a venue lookup service that implements the lexicon.
+ATGeo provides a geographic place lexicon for [AT Protocol](https://atproto.com/) applications, and a venue lookup service that implements the lexicon.
 
 {% mapSearch %}
 <div class="map-layout">
