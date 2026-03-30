@@ -15,6 +15,10 @@ Base URL: `https://places.atgeo.org/xrpc`
 
 The `org.atgeo` query lexicon is implemented in [Garganorn](https://github.com/schuyler/garganorn). The public endpoint is hosted with the generous support of the [AT Protocol Community Fund](https://atprotocol.dev/community-fund/).
 
+## Lexicon
+
+`goat lex resolve org.atgeo.place` will retrieve the `place` lexicon. You can also fetch the [latest version](https://places.atgeo.org/org.atgeo.place) from the API service itself.
+
 ## Methods
 
 ### `org.atgeo.searchRecords`
