@@ -13,17 +13,9 @@ system](https://atproto.com/specs/lexicon) offers six primitive types
 &mdash; `boolean`, `integer`, `string`, `bytes`, `cid-link`, and `blob`
 &mdash; but no `float` or `double`.
 
-Both JSON and CBOR natively support floats, but AT Protocol deliberately
-disallows them. The reason is **serialization reliability**: deserializing
-a float into a machine-native format and then re-encoding it doesn't
-always produce the same bytes. This is definitely true for special values
-and corner cases, but it can even happen with ordinary float values on
-less common architectures. In a content-addressed, cryptographically
-signed protocol, non-deterministic serialization would break hash
-verification.
-
 The AT Protocol spec recommends encoding floats as strings or bytes to
 ensure safe round-trip representation. ATGeo follows this guidance:
 coordinates like `"37.776146"` are stored as strings that preserve
 the exact decimal representation from the source data, with no risk
 of silent precision loss from floating-point arithmetic.
+
