@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% if title %}{{ title }} — ATGeo{% else %}ATGeo — Places for AT Protocol{% endif %}</title>
-    {% if page.url == "/" %}<link rel="stylesheet" href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" />{% endif %}
+    {% if page.url == "/" %}<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" />{% endif %}
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="ATGeo" />
@@ -52,7 +52,7 @@
       </main>
     </div>
     {% if page.url == "/" %}
-    <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
     <script src="/js/map-demo.js" defer></script>
     <script src="/js/place-display.js" defer></script>
     {% endif %}
