@@ -51,6 +51,9 @@
         {{ content | safe }}
       </main>
     </div>
+    {% if page.url == "/" or page.url == "/api/" %}
+    <script src="/js/atgeo-search.js" defer></script>
+    {% endif %}
     {% if page.url == "/" %}
     <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
     <script src="/js/map-demo.js" defer></script>

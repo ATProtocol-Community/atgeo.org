@@ -61,7 +61,7 @@ Always `"org.atgeo.place"`. Identifies the record as an ATGeo Place.
 
 ### `collection`
 
-The source collection this record belongs to (e.g., `org.atgeo.places.foursquare`, `org.atgeo.places.overture`). Determines which attributes are present and how they should be interpreted.
+The source collection this record belongs to (e.g., `org.atgeo.places.foursquare`, `org.atgeo.places.overture.place`). Determines which attributes are present and how they should be interpreted.
 
 ### `rkey`
 

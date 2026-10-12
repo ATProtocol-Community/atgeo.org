@@ -14,4 +14,4 @@ ATGeo provides a geographic place lexicon for [AT Protocol](https://atproto.com/
 {% placeDisplay %}
 </div>
 
-The ATGeo [data model](/place/) describes how points of interest are represented. The [XRPC API](/api/) provides search access to the venue databases. See [Usage](/usage/) for guidance on integrating the lexicon into your apps.
+The ATGeo [data model](/place/) describes how points of interest are represented. The [XRPC API](/api/) returns the map tiles covering a region, so apps can search the venue databases themselves. See [Usage](/usage/) for guidance on integrating the lexicon into your apps.

@@ -1,0 +1,319 @@
+{
+ "collection": "org.atgeo.places.overture.place",
+ "source": "https://overturemaps.org/",
+ "license": "https://docs.overturemaps.org/attribution/",
+ "generated_at": "2026-08-20T14:40:19Z",
+ "records": [
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.overture.place/9b446cf9-edc8-435a-9c21-89d821620be5",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "9b446cf9-edc8-435a-9c21-89d821620be5",
+    "name": "Café 2238",
+    "importance": 43,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.783331",
+      "longitude": "-122.440773"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.overture.place/fc52e475-313b-4bc2-998a-84c06a086b54",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "fc52e475-313b-4bc2-998a-84c06a086b54",
+    "name": "Mary Ann Bañez, M.d.",
+    "importance": 60,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.783697",
+      "longitude": "-122.439301"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.overture.place/7a3bad16-fc25-4d56-a716-85a4c338fa39",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "7a3bad16-fc25-4d56-a716-85a4c338fa39",
+    "name": "MAC Cosmetics",
+    "importance": 56,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.782515",
+      "longitude": "-122.438850"
+     }
+    ],
+    "variants": [
+     {
+      "name": "M·A·C",
+      "type": "short"
+     }
+    ]
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.overture.place/0132becb-a8b3-4cd5-bd0c-0502c2bf54cf",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "0132becb-a8b3-4cd5-bd0c-0502c2bf54cf",
+    "name": "Arab Talk Radio",
+    "importance": 59,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.781902",
+      "longitude": "-122.439545"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.overture.place/066b1e71-99b9-412a-9b5e-9d93cb399232",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "066b1e71-99b9-412a-9b5e-9d93cb399232",
+    "name": "Nishimoto Physical Therapy Svc",
+    "importance": 54,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.783697",
+      "longitude": "-122.439301"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.overture.place/08561fff-1842-4465-a91f-4c10d1102fb8",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "08561fff-1842-4465-a91f-4c10d1102fb8",
+    "name": "Azure Dental",
+    "importance": 54,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.783697",
+      "longitude": "-122.439301"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.overture.place/087c7620-883e-472c-8d86-16275ae6e572",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "087c7620-883e-472c-8d86-16275ae6e572",
+    "name": "Nove Device",
+    "importance": 54,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.781519",
+      "longitude": "-122.438065"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.overture.place/0eb56e70-9483-40aa-8346-b50e73a6f10c",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "0eb56e70-9483-40aa-8346-b50e73a6f10c",
+    "name": "Choice Medical Group",
+    "importance": 59,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.782400",
+      "longitude": "-122.439552"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.overture.place/0f01f0c6-db36-49dc-bd4a-d90f553d8704",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "0f01f0c6-db36-49dc-bd4a-d90f553d8704",
+    "name": "UPS Access Point location",
+    "importance": 59,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.779556",
+      "longitude": "-122.438683"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.overture.place/1154da2d-c894-4647-9afe-d1fb2b986572",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "1154da2d-c894-4647-9afe-d1fb2b986572",
+    "name": "Divisadero Heights Cleaners",
+    "importance": 59,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.780376",
+      "longitude": "-122.439003"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.overture.place/172de18a-5420-4523-8670-84b32bcaa994",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "172de18a-5420-4523-8670-84b32bcaa994",
+    "name": "Mollie Goodman, Np",
+    "importance": 60,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.783415",
+      "longitude": "-122.440834"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.overture.place/19c1590d-b2ad-454c-9a84-94bbcb584555",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "19c1590d-b2ad-454c-9a84-94bbcb584555",
+    "name": "Samantha Langer",
+    "importance": 60,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.783415",
+      "longitude": "-122.440834"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.overture.place/22e602ad-a628-4675-b9d9-4d7b6966eb81",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "22e602ad-a628-4675-b9d9-4d7b6966eb81",
+    "name": "Pearl Market",
+    "importance": 54,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.780703",
+      "longitude": "-122.439087"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.overture.place/238625d2-d78c-4692-9c4f-ab67477279bd",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "238625d2-d78c-4692-9c4f-ab67477279bd",
+    "name": "Dr. Beverly L. Bolinger, Md",
+    "importance": 60,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.783415",
+      "longitude": "-122.440834"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.overture.place/2a283f37-48a9-4e50-b6c6-7f1a493ef8d5",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "2a283f37-48a9-4e50-b6c6-7f1a493ef8d5",
+    "name": "Jennifer Ross Md",
+    "importance": 60,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.783697",
+      "longitude": "-122.439301"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.overture.place/2a6adaeb-f631-4aad-bb8a-4d1e098cd6a1",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "2a6adaeb-f631-4aad-bb8a-4d1e098cd6a1",
+    "name": "Late Bloomers San Francisco",
+    "importance": 59,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.780905",
+      "longitude": "-122.439362"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.overture.place/2c77e102-3245-4bd6-8492-b6c705ea6476",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "2c77e102-3245-4bd6-8492-b6c705ea6476",
+    "name": "Peter Peng-boon Yeo, Md",
+    "importance": 60,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.783415",
+      "longitude": "-122.440834"
+     }
+    ],
+    "variants": []
+   }
+  }
+ ]
+}

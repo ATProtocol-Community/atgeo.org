@@ -16,14 +16,11 @@
   queryInput.setAttribute('aria-label', 'Place search');
 
   const collectionSelect = document.createElement('select');
-  [
-    { label: 'OSM', value: 'org.atgeo.places.osm' },
-    { label: '4SQ', value: 'org.atgeo.places.foursquare' },
-    { label: 'Overture', value: 'org.atgeo.places.overture' },
-  ].forEach(({ label, value }) => {
+  AtgeoSearch.COLLECTIONS.forEach(({ label, value, disabled }) => {
     const opt = document.createElement('option');
     opt.value = value;
-    opt.textContent = label;
+    opt.textContent = disabled ? `${label} (unavailable)` : label;
+    opt.disabled = !!disabled;
     collectionSelect.appendChild(opt);
   });
 
@@ -95,34 +92,25 @@
     document.dispatchEvent(new CustomEvent('search-results', { detail: [] }));
 
     const bounds = map.getBounds();
-    const params = new URLSearchParams({
-      collection,
-      bbox: [
-        bounds.getWest(),
-        bounds.getSouth(),
-        bounds.getEast(),
-        bounds.getNorth(),
-      ].join(','),
-      limit: 12,
-    });
-    if (q) params.set('q', q);
-
-    let data;
+    let records;
     try {
-      const resp = await fetch(
-        `https://places.atgeo.org/xrpc/org.atgeo.searchRecords?${params}`
-      );
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      data = await resp.json();
+      const result = await AtgeoSearch.search({
+        collection,
+        bbox: [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
+        q,
+        limit: 12,
+      });
+      records = result.records;
+      if (result.loaded < result.total) {
+        showError(`Showing results from ${result.loaded} of ${result.total} tiles`);
+      }
     } catch (err) {
-      showError(`Search failed: ${err.message}`);
+      showError(err.xrpc === 'BboxTooLarge' ? 'Zoom in to search here' : `Search failed: ${err.message}`);
       return;
     } finally {
       searchBtn.disabled = false;
       searchBtn.classList.remove('loading');
     }
-
-    const records = data.records || [];
 
     records.forEach((record, i) => {
       const locations = record?.value?.locations || [];

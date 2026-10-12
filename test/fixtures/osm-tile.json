@@ -1,0 +1,324 @@
+{
+ "collection": "org.atgeo.places.osm",
+ "source": "https://www.openstreetmap.org/",
+ "license": "https://opendatacommons.org/licenses/odbl/1-0/",
+ "generated_at": "2026-08-20T21:52:39Z",
+ "records": [
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:4548624461",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "node:4548624461",
+    "name": "Bistro La Chaumière",
+    "importance": 46,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.775185",
+      "longitude": "-122.438003"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:4556415854",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "node:4556415854",
+    "name": "Laundré",
+    "importance": 59,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.781055",
+      "longitude": "-122.439201"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:647656706",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "node:647656706",
+    "name": "Cafe Réveille",
+    "importance": 48,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.771057",
+      "longitude": "-122.432071"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:10244015348",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "node:10244015348",
+    "name": "Song Tea & Ceramics",
+    "importance": 62,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.785953",
+      "longitude": "-122.435384"
+     }
+    ],
+    "variants": [
+     {
+      "name": "Song Tea and Ceramics",
+      "type": "alternate"
+     }
+    ]
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:11349537575",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "node:11349537575",
+    "name": "Popeyes",
+    "importance": 53,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.783208",
+      "longitude": "-122.432296"
+     }
+    ],
+    "variants": [
+     {
+      "name": "Popeyes Louisiana Kitchen",
+      "type": "official"
+     }
+    ]
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:10177572477",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "node:10177572477",
+    "name": "DaVita Dialysis",
+    "importance": 51,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.782570",
+      "longitude": "-122.448403"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:10575364925",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "node:10575364925",
+    "name": "reWAXation",
+    "importance": 51,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.778014",
+      "longitude": "-122.438243"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:10612130303",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "node:10612130303",
+    "name": "Firecrawl",
+    "importance": 50,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.771585",
+      "longitude": "-122.435579"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:10916864845",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "node:10916864845",
+    "name": "Q Spa",
+    "importance": 51,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.771155",
+      "longitude": "-122.432089"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:11071758780",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "node:11071758780",
+    "name": "San Francisco Fire Credit Union",
+    "importance": 50,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.787022",
+      "longitude": "-122.447269"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:11279968191",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "node:11279968191",
+    "name": "Bright Horizons",
+    "importance": 50,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.782007",
+      "longitude": "-122.446237"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:11334989402",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "node:11334989402",
+    "name": "Pizza Inferno",
+    "importance": 51,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.786250",
+      "longitude": "-122.433200"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:12745936139",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "node:12745936139",
+    "name": "Victorian Manor",
+    "importance": 51,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.778250",
+      "longitude": "-122.435743"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:13163731721",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "node:13163731721",
+    "name": "'N Motion Fitness",
+    "importance": 50,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.773259",
+      "longitude": "-122.450663"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:13639606766",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "node:13639606766",
+    "name": "Effin Relax",
+    "importance": 50,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.779029",
+      "longitude": "-122.438781"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:1784908622",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "node:1784908622",
+    "name": "Fly Bar & Restaurant",
+    "importance": 50,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.776762",
+      "longitude": "-122.437949"
+     }
+    ],
+    "variants": []
+   }
+  },
+  {
+   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:1958701051",
+   "cid": null,
+   "value": {
+    "$type": "org.atgeo.place",
+    "rkey": "node:1958701051",
+    "name": "Things Lucky",
+    "importance": 51,
+    "locations": [
+     {
+      "$type": "community.lexicon.location.geo",
+      "latitude": "37.770819",
+      "longitude": "-122.447244"
+     }
+    ],
+    "variants": []
+   }
+  }
+ ]
+}

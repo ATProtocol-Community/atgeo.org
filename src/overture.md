@@ -5,7 +5,7 @@ title: "Overture"
 
 # Overture
 
-Collection: `org.atgeo.places.overture`
+Collection: `org.atgeo.places.overture.place`
 
 ATGeo imports points of interest from the [Overture Maps](https://docs.overturemaps.org/) places dataset, an open data project providing freely available global map data. The places theme is licensed under the [CDLA Permissive 2.0](https://cdla.dev/permissive-2-0/) license. See the Overture [attribution documentation](https://docs.overturemaps.org/attribution/) for details.
 
@@ -14,7 +14,7 @@ ATGeo imports points of interest from the [Overture Maps](https://docs.overturem
 ```json
 {
   "$type": "org.atgeo.place",
-  "collection": "org.atgeo.places.overture",
+  "collection": "org.atgeo.places.overture.place",
   "rkey": "ef44c6c0-470d-4cfd-929e-54d64775dfd7",
   "name": "CoffeeShop",
   "variants": [],

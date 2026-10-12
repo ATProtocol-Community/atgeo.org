@@ -1,13 +1,7 @@
 // Query demo implementation
 
 (function () {
-  const BASE_URL = 'https://places.atgeo.org/xrpc/org.atgeo.searchRecords';
-
-  const COLLECTIONS = [
-    { label: 'OSM', value: 'org.atgeo.places.osm' },
-    { label: '4SQ', value: 'org.atgeo.places.foursquare' },
-    { label: 'Overture', value: 'org.atgeo.places.overture' },
-  ];
+  const BASE_URL = 'https://places.atgeo.org/xrpc/org.atgeo.getCoverage';
 
   function buildHTML() {
     return `
@@ -16,7 +10,7 @@
           <label class="query-field">
             <span class="query-label">collection</span>
             <select name="collection" id="qd-collection">
-              ${COLLECTIONS.map(c => `<option value="${c.value}">${c.label}</option>`).join('')}
+              ${AtgeoSearch.COLLECTIONS.map(c => `<option value="${c.value}"${c.disabled ? ' disabled' : ''}>${c.label}${c.disabled ? ' (unavailable)' : ''}</option>`).join('')}
             </select>
           </label>
           <label class="query-field">
@@ -24,12 +18,8 @@
             <input type="text" name="q" id="qd-q" placeholder="coffee" />
           </label>
           <label class="query-field">
-            <span class="query-label">latitude</span>
-            <input type="text" name="latitude" id="qd-latitude" value="37.7749" />
-          </label>
-          <label class="query-field">
-            <span class="query-label">longitude</span>
-            <input type="text" name="longitude" id="qd-longitude" value="-122.4194" />
+            <span class="query-label">bbox</span>
+            <input type="text" name="bbox" id="qd-bbox" value="-122.44,37.76,-122.42,37.78" />
           </label>
           <label class="query-field">
             <span class="query-label">limit</span>
@@ -37,26 +27,20 @@
           </label>
           <button type="button" class="icon-btn" id="qd-locate" aria-label="Use my location" title="Use my location"><img src="/assets/location-arrow-532530.svg" alt="" width="16" height="16"></button>
           <button type="submit" class="icon-btn icon-btn-wide" id="qd-run" aria-label="Run Query" title="Run Query"><img src="/assets/search-alt-1-532551.svg" alt="" width="16" height="16"></button>
+          <button type="button" class="icon-btn icon-btn-wide" id="qd-match">Fetch tiles &amp; match</button>
         </div>
       </form>
       <div class="query-url" id="qd-url-display"></div>
+      <p>The URL above is the only request the server sees. <code>q</code> and <code>limit</code> apply locally to the tiles it lists.</p>
       <div class="query-results" id="qd-results"></div>
     `;
   }
 
   function getParams() {
-    const collection = document.getElementById('qd-collection').value;
-    const q = document.getElementById('qd-q').value.trim();
-    const latitude = document.getElementById('qd-latitude').value.trim();
-    const longitude = document.getElementById('qd-longitude').value.trim();
-    const limit = document.getElementById('qd-limit').value.trim();
-
-    const params = { collection };
-    if (q) params.q = q;
-    if (latitude) params.latitude = latitude;
-    if (longitude) params.longitude = longitude;
-    if (limit) params.limit = limit;
-    return params;
+    return {
+      collection: document.getElementById('qd-collection').value,
+      bbox: document.getElementById('qd-bbox').value.trim(),
+    };
   }
 
   function buildURL(params) {
@@ -119,27 +103,53 @@
     resultsEl.innerHTML = `<pre><code>${highlighted}</code></pre>`;
   }
 
-  async function runQuery() {
+  async function withLoading(buttonId, task) {
     const resultsEl = document.getElementById('qd-results');
-    const button = document.getElementById('qd-run');
-    const params = getParams();
-    const url = buildURL(params);
+    const button = document.getElementById(buttonId);
 
     button.disabled = true;
     button.classList.add('loading');
     showLoading(resultsEl);
 
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
-      showResult(resultsEl, data);
+      await task(resultsEl);
     } catch (err) {
       showError(resultsEl, err.message || 'Request failed');
     } finally {
       button.disabled = false;
       button.classList.remove('loading');
     }
+  }
+
+  function runQuery() {
+    const { collection, bbox } = getParams();
+    return withLoading('qd-run', async (resultsEl) => {
+      showResult(resultsEl, await AtgeoSearch.getCoverage(collection, bbox));
+    });
+  }
+
+  function runMatch() {
+    const { collection, bbox } = getParams();
+    const q = document.getElementById('qd-q').value.trim();
+    const limit = parseInt(document.getElementById('qd-limit').value, 10) || 5;
+    return withLoading('qd-match', async (resultsEl) => {
+      const result = await AtgeoSearch.search({
+        collection,
+        bbox: bbox.split(',').map(Number),
+        q,
+        limit,
+      });
+      showResult(resultsEl, result.records);
+      const note = document.createElement('p');
+      note.textContent = `${result.loaded}/${result.total} tiles loaded`;
+      resultsEl.prepend(note);
+    });
+  }
+
+  // 0.02 degree square around the point, snapped like a search bbox
+  function setBboxAround(lat, lon) {
+    const d = 0.01;
+    document.getElementById('qd-bbox').value = AtgeoSearch.snapBbox([lon - d, lat - d, lon + d, lat + d]);
   }
 
   function init() {
@@ -152,7 +162,7 @@
     container.addEventListener('input', updateURLDisplay);
     container.addEventListener('change', updateURLDisplay);
 
-    // Geolocate button fills in lat/lon fields
+    // Geolocate button fills in the bbox field
     document.getElementById('qd-locate').addEventListener('click', function () {
       const btn = this;
       if (btn.disabled) return;
@@ -165,8 +175,7 @@
 
       navigator.geolocation.getCurrentPosition(
         function (position) {
-          document.getElementById('qd-latitude').value = position.coords.latitude;
-          document.getElementById('qd-longitude').value = position.coords.longitude;
+          setBboxAround(position.coords.latitude, position.coords.longitude);
           updateURLDisplay();
           btn.disabled = false;
         },
@@ -183,6 +192,8 @@
       runQuery();
     });
 
+    document.getElementById('qd-match').addEventListener('click', runMatch);
+
     // Listen for place-selected events from the map
     document.addEventListener('place-selected', function (e) {
       const record = e.detail;
@@ -194,8 +205,7 @@
         l => l.$type && l.$type.toLowerCase().includes('geo')
       );
       if (geoLoc && geoLoc.latitude != null && geoLoc.longitude != null) {
-        document.getElementById('qd-latitude').value = geoLoc.latitude;
-        document.getElementById('qd-longitude').value = geoLoc.longitude;
+        setBboxAround(parseFloat(geoLoc.latitude), parseFloat(geoLoc.longitude));
       }
 
       updateURLDisplay();

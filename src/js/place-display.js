@@ -44,7 +44,7 @@
   }
 
   function getPrimaryType(record) {
-    const collection = record?.value?.collection;
+    const collection = new URL(record.uri).pathname.split('/')[1];
     const attrs = record?.value?.attributes;
     if (!attrs) return null;
 
@@ -56,7 +56,7 @@
       }
     }
 
-    if (collection === 'org.atgeo.places.overture') {
+    if (collection === 'org.atgeo.places.overture.place') {
       const primary = attrs.categories?.primary;
       if (primary) {
         return titleCase(primary.replace(/_/g, ' '));

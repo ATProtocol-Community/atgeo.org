@@ -5,6 +5,8 @@ title: "Foursquare"
 
 # Foursquare
 
+The public service at places.atgeo.org does not currently serve this collection; `getCoverage` returns `CollectionNotFound` for it. The mapping documented below still applies to Foursquare-derived records.
+
 Collection: `org.atgeo.places.foursquare`
 
 ATGeo imports points of interest from the [Foursquare Open Source Places](https://opensource.foursquare.com/os-places/) dataset, a freely available global PoI database. The dataset is licensed under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0). See the Foursquare [data documentation](https://docs.foursquare.com/data-products/docs/fsq-places-open-source) for details.
