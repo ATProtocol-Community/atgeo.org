@@ -24,6 +24,16 @@ const named = (records, name) => records.find((r) => r.value.name === name).valu
 
 const PHILLY_VIEW = [-75.18, 39.94, -75.15, 39.96];
 
+// Shaped like MapLibre's LngLatBounds: corners only through methods.
+const bounds = (west, south, east, north) => ({
+  _sw: { lng: west, lat: south },
+  _ne: { lng: east, lat: north },
+  getWest() { return this._sw.lng; },
+  getSouth() { return this._sw.lat; },
+  getEast() { return this._ne.lng; },
+  getNorth() { return this._ne.lat; },
+});
+
 test('DATASETS offers the three served tilesets and maps to searchPlaces options', () => {
   assert.deepEqual(
     DATASETS.map((d) => d.id),
@@ -107,22 +117,36 @@ test('placePoint handles antimeridian-crossing boxes', () => {
   assert.ok(Math.abs(both.lon - 179.25) < 1e-9, `lon ${both.lon}`);
 });
 
+test('placePoint keeps world-spanning boxes inside a crossing viewport', () => {
+  // A Pacific view from viewportBbox; the US and Russia boxes overlap it on both sides.
+  const view = [100, 0, -60, 70];
+  const us = placePoint(named(divisions, 'United States'), view);
+  assert.ok(Math.abs(us.lon - -160) < 1e-9, `lon ${us.lon}`);
+  assert.ok(Math.abs(us.lat - (18.910694 + 70) / 2) < 1e-9, `lat ${us.lat}`);
+  const russia = {
+    locations: [{ $type: 'community.lexicon.location.bbox', west: '-180', south: '41.18', east: '180', north: '81.86' }],
+  };
+  const ru = placePoint(russia, view);
+  assert.ok(Math.abs(ru.lon - -160) < 1e-9, `lon ${ru.lon}`);
+  assert.ok(Math.abs(ru.lat - (41.18 + 70) / 2) < 1e-9, `lat ${ru.lat}`);
+});
+
 test('viewportBbox passes an ordinary view through', () => {
-  assert.deepEqual(viewportBbox({ west: -75.2, south: 39.9, east: -75.1, north: 40 }), [-75.2, 39.9, -75.1, 40]);
+  assert.deepEqual(viewportBbox(bounds(-75.2, 39.9, -75.1, 40)), [-75.2, 39.9, -75.1, 40]);
 });
 
 test('viewportBbox wraps unwrapped MapLibre longitudes', () => {
   // Panned one world west: same place, longitudes shifted by 360.
-  const v = viewportBbox({ west: -435.2, south: 39.9, east: -435.1, north: 40 });
+  const v = viewportBbox(bounds(-435.2, 39.9, -435.1, 40));
   assert.ok(Math.abs(v[0] - -75.2) < 1e-9 && Math.abs(v[2] - -75.1) < 1e-9, String(v));
   // Straddling the antimeridian comes out west > east.
-  const x = viewportBbox({ west: 170, south: -20, east: 190, north: -10 });
+  const x = viewportBbox(bounds(170, -20, 190, -10));
   assert.ok(Math.abs(x[0] - 170) < 1e-9 && Math.abs(x[2] - -170) < 1e-9, String(x));
   assert.ok(x[0] > x[2]);
 });
 
 test('viewportBbox covers the world when the view is wider than it', () => {
-  assert.deepEqual(viewportBbox({ west: -250, south: -95, east: 200, north: 95 }), [-180, -90, 180, 90]);
+  assert.deepEqual(viewportBbox(bounds(-250, -95, 200, 95)), [-180, -90, 180, 90]);
 });
 
 test('placeCategory reads OSM tags in garganorn priority order', () => {
