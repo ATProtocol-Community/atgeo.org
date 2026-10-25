@@ -170,7 +170,7 @@ An [H3](https://h3geo.org/) cell. The lexicon declares it, but the gazetteer doe
 
 `attributes` is the source's own vocabulary, passed through rather than homogenized. Its shape differs by collection, and each tileset's [descriptor](/api/#org-atgeo-describetileset) lists the keys its records may carry. The per-dataset pages say what to expect:
 
-- [OpenStreetMap](/osm/): a filtered tag map, including the tag that made the element a place
+- [OpenStreetMap](/osm/): a filtered tag map, including the tag that gives its primary category
 - [Overture Places](/overture/): the upstream fields (`names`, `categories`, `websites`, `brand`, `sources` and so on)
 - [Overture Divisions](/divisions/): `subtype`, `country`, `region`, `wikidata`, `population`
 

@@ -35,7 +35,7 @@ A `way` or `relation` is a polygon or a line in OSM. Here it's a point: the gaze
 
 `attributes` is a filtered map of the element's OSM [tags](https://wiki.openstreetmap.org/wiki/Tags), passed through as-is. Tags are free-form, so what you get depends on what mappers wrote down. The import keeps:
 
-- the tags that classify it (`amenity`, `shop`, `tourism`, `leisure`, and so on; see [the primary category](#the-primary-category)),
+- the one tag that gives its [primary category](#the-primary-category) (`amenity=library`, say); any other classifying tags (a `building=yes` on the same way) are dropped,
 - the name family: `name:*`, `alt_name`, `old_name`, `official_name`, `short_name`, `loc_name`, `int_name`,
 - `cuisine`, `sport`, `religion`, `denomination`,
 - `opening_hours`, `phone`, `website`, `wikidata`, `wheelchair`, `internet_access`,
@@ -44,6 +44,8 @@ A `way` or `relation` is a polygon or a line in OSM. Here it's a point: the gaze
 Everything else is dropped.
 
 Which elements become places is decided tag by tag, and only named elements qualify. Some keys admit any value but a few: any `tourism`; `amenity` except street furniture and the like (`parking`, `bench`, `toilets`, `waste_basket`, `post_box`, …); `shop` except `yes` and `vacant`; `office`, `craft` and `healthcare` except `yes`; and, for ways and relations only, `building` except houses, outbuildings and the like (`house`, `detached`, `terrace`, `garage`, `shed`, `barn`, `roof`, …, plus `no`, `construction` and `ruins`). Every other key admits only listed values: `leisure=park` or `stadium` but not `pitch`, `natural=peak` or `beach` but not `tree`, `railway=station`, `place=city`, `town`, `suburb`, `neighbourhood`, `island` and others, `highway=services` or `trailhead` but not `bus_stop`, and so on. The full lists are in garganorn's [`osm_import.sql`](https://github.com/schuyler/garganorn/blob/main/garganorn/sql/osm_import.sql).
+
+A relation that passes the filter can still be left out when it duplicates something already imported: if one of its member nodes or ways is a place with the same name, or any place with the same name lies within the relation's extent, the relation is dropped in favor of that place.
 
 The [tileset descriptor](/api/#org-atgeo-describetileset) lists the tag keys a collection's records may carry.
 
