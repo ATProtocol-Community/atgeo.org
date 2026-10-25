@@ -277,7 +277,7 @@ A tile is a set of place records associated with one quadkey cell (Web-Mercator 
 
 **Tile URLs are opaque.** Never construct one; take whole URLs from `getTiles` and fetch them as given. A tile URL is immutable. When a new build is published, the URLs change completely, which costs you nothing, because you ask `getTiles` again instead of remembering URLs. Old builds are eventually retired, so a hoarded URL will in time return 404. That's the penalty for remembering.
 
-**Zoom and assignment.** The regular tiles exist at zooms 6 through 17. Each record goes in the coarsest tile holding no more than a per-build cap of records (1,000 by default) (a division goes by its interior point), falling back to zoom 17 when nothing coarser qualifies. Dense areas get small tiles and sparse areas get big ones. Tiles at different zooms coexist in one tileset, so assume no particular zoom. Divisions are polygons and are also referenced from every tile their geometry overlaps. Records within a tile are in no meaningful order.
+**Zoom and assignment.** The regular tiles exist at zooms 6 through 17. Each record goes in the coarsest tile holding no more than a per-build cap of records (1,000 by default; a division goes by its interior point), falling back to zoom 17 when nothing coarser qualifies. Dense areas get small tiles and sparse areas get big ones. Tiles at different zooms coexist in one tileset, so assume no particular zoom. Divisions are polygons and are also referenced from every tile their geometry overlaps. Records within a tile are in no meaningful order.
 
 **Deduplicate by `origin`.** When you merge records from more than one tile, dedupe by `value.origin`, or by the record's `uri` for a record with no origin. Do this for every collection, unconditionally. A point record today lives in one regular tile plus possibly one overview tile, so duplicates are rare there; a division is referenced from every tile it overlaps, so there they're the norm. Every copy of a record is byte-identical, so it doesn't matter which one you keep.
 
@@ -406,7 +406,7 @@ The DID document's `id` is the same `did:web` as `describeService`'s `did`. It a
 | `MethodNotAllowed` | 405 | An HTTP method the route doesn't take, with an `Allow` header |
 | `MethodNotImplemented` | 501 | The NSID isn't one of the four methods the server implements, which includes every `com.atproto.*` method and a record lexicon such as `org.atgeo.place` |
 
-**On the plain routes, a miss is HTTP 404** with a JSON body, never an HTML page:
+**On the plain routes, a miss is HTTP 404** with a JSON body, never an HTML page (the spec's rule; see the note under [Headers](#headers-caching-and-cors) on where the live server still lags):
 
 | Route | Miss | Error |
 |-------|------|-------|

@@ -47,7 +47,7 @@ The `categories` values in the tileset descriptor are Overture's primary categor
 
 ## Addresses
 
-When Overture has an address, the place gets a second location, `community.lexicon.location.address`, alongside the point: `country`, `region`, `locality`, `street` and `postalCode`. A place can have either or both of the location types; look at `$type`.
+When Overture has an address, the place gets a second location, `community.lexicon.location.address`, alongside the point: `country`, `region`, `locality`, `street` and `postalCode`. Every place here has the point; the address is there when Overture has one. Look at `$type` rather than position.
 
 ## Variants
 

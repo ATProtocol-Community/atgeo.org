@@ -5,7 +5,7 @@ title: "Overture Divisions"
 
 # Overture Divisions
 
-Divisions are the administrative areas from [Overture Maps](https://overturemaps.org/): countries, regions, counties, cities, neighborhoods. In ATGeo they do two jobs. They're places you can look up, and they're what [`relations.within`](/place/) points at when a record needs to say "what city is this in".
+Divisions are the administrative areas from [Overture Maps](https://overturemaps.org/): countries, regions, counties, cities, neighborhoods. In ATGeo they do two jobs. They're places you can look up, and they're what [`relations.within`](/place/#within) points at when a record needs to say "what city is this in".
 
 | | |
 |---|---|
