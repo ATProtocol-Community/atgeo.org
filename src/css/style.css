@@ -481,6 +481,14 @@ input[type="button"]:disabled {
   color: #dc2626;
 }
 
+main :not(pre) > code {
+  overflow-wrap: anywhere;
+}
+
+.map-search-error.map-search-note {
+  color: #555;
+}
+
 .query-status {
   color: #555;
   margin: 0 0 0.5rem;
@@ -797,7 +805,8 @@ input[type="button"]:disabled {
     border-bottom: 2px solid #2a6496;
   }
 
-  .sidebar.sidebar-open ul.sidebar-sub a {
+  .sidebar.sidebar-open ul.sidebar-sub a,
+  .sidebar.sidebar-open ul.sidebar-sub li[aria-current="page"] > a {
     padding-left: 1.5rem;
   }
 

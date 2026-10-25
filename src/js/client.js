@@ -7,12 +7,10 @@ export { AtgeoError };
 
 export const SERVER = 'https://places.atgeo.org';
 
-// onRequest({url}) fires as a request goes out; onResponse({url, status}) or
-// onResponse({url, error}) when it settles.
-export function createClient({ onRequest, onResponse } = {}) {
+// onResponse({url, status}) or onResponse({url, error}) fires as each request settles.
+export function createClient({ onResponse } = {}) {
   async function fetchAndReport(url, init) {
     const entry = { url: String(url) };
-    onRequest?.(entry);
     try {
       const response = await globalThis.fetch(url, init);
       onResponse?.({ ...entry, status: response.status });

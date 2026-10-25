@@ -72,8 +72,14 @@ if (container) {
   }
 
   function showError(msg) {
+    errorMsg.classList.remove('map-search-note');
     errorMsg.textContent = msg;
     errorMsg.hidden = false;
+  }
+
+  function showNote(msg) {
+    showError(msg);
+    errorMsg.classList.add('map-search-note');
   }
 
   function clearError() {
@@ -135,7 +141,7 @@ if (container) {
     if (result.overview) notes.push('Showing only the most important places here; zoom in for more');
     if (!result.complete) notes.push(`${result.tiles.failed} of ${result.tiles.fetched + result.tiles.failed} tiles failed to load`);
     if (hits.length === 0) notes.push('No places found here');
-    if (notes.length) showError(notes.join('. '));
+    if (notes.length) showNote(notes.join('. '));
 
     hits.forEach((hit, i) => {
       const point = placePoint(hit.place, viewport);
@@ -150,7 +156,6 @@ if (container) {
         .addTo(map);
 
       const el = marker.getElement();
-      el.dataset.recordIndex = String(i);
       el.addEventListener('mouseenter', () => {
         document.dispatchEvent(new CustomEvent('place-hover', { detail: { recordIndex: i } }));
       });

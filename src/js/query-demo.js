@@ -95,18 +95,27 @@ function jsonBlock(data) {
   return pre;
 }
 
+let runSeq = 0;
+
+// Runs a task that renders into the results; only the latest run gets to render.
 async function withLoading(buttonId, task) {
   const resultsEl = $('qd-results');
   const button = $(buttonId);
+  const seq = ++runSeq;
+  const latest = {
+    replaceChildren: (...nodes) => {
+      if (seq === runSeq) resultsEl.replaceChildren(...nodes);
+    },
+  };
 
   button.disabled = true;
   button.classList.add('loading');
   showLoading(resultsEl);
 
   try {
-    await task(resultsEl);
+    await task(latest);
   } catch (err) {
-    showError(resultsEl, err.message || 'Request failed');
+    if (seq === runSeq) showError(resultsEl, err.message || 'Request failed');
   } finally {
     button.disabled = false;
     button.classList.remove('loading');
