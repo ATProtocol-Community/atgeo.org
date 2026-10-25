@@ -7,7 +7,7 @@ title: "Lexicon"
 
 `org.atgeo.place` is the record type for a geographic place: a name, one or more locations, and whatever the upstream dataset knows about it.
 
-Three more lexicons ride along: [`org.atgeo.defs`](#orgatgeodefs) (shared definitions), [`org.atgeo.tilePayload`](#orgatgeotilepayload) (what a tile file looks like) and the four query lexicons, which are documented on the [XRPC API](/api/) page.
+Three more lexicons ride along: [`org.atgeo.defs`](#org-atgeo-defs) (shared definitions), [`org.atgeo.tilePayload`](#org-atgeo-tilepayload) (what a tile file looks like) and the four query lexicons, which are documented on the [XRPC API](/api/) page.
 
 ## Fetching the lexicons
 
@@ -85,7 +85,6 @@ A record with `key: any`. Only `name` is required, since the lexicon has to acce
 
 Ignore properties you don't recognize. New ones may show up, and existing ones keep their meaning.
 
-<a id="origin-and-identity"></a>
 
 ### Origin and identity
 
@@ -106,7 +105,6 @@ A URN is a name, not a location. It doesn't say which server has the place, and 
 
 **Copying.** Gazetteer places are not repository records, so there's no `at://` URI for one. If you copy a place into your own repo, the copy keeps the gazetteer's URN as its `origin`, and the copy gets its own `at://` URI. If you copy a repo record that has no `origin`, the copy's `origin` is the source's `at://` URI. And a place with no `origin` at all is its own origin, identified by its `at://` URI. Copying and editing never change `origin`.
 
-<a id="locations"></a>
 
 ### Locations
 
@@ -170,7 +168,7 @@ An [H3](https://h3geo.org/) cell. The lexicon declares it, but the gazetteer doe
 
 ### Attributes
 
-`attributes` is the source's own vocabulary, passed through rather than homogenized. Its shape differs by collection, and each tileset's [descriptor](/api/#describetileset) lists the keys its records may carry. The per-dataset pages say what to expect:
+`attributes` is the source's own vocabulary, passed through rather than homogenized. Its shape differs by collection, and each tileset's [descriptor](/api/#org-atgeo-describetileset) lists the keys its records may carry. The per-dataset pages say what to expect:
 
 - [OpenStreetMap](/osm/): a filtered tag map, including the tag that made the element a place
 - [Overture Places](/overture/): the upstream fields (`names`, `categories`, `websites`, `brand`, `sources` and so on)
@@ -200,7 +198,6 @@ The places that geographically contain this one, ordered **broadest first**. The
 
 Other URIs that name the same place. Declared, not yet produced.
 
-<a id="orgatgeodefs"></a>
 
 ## `org.atgeo.defs`
 
@@ -259,7 +256,6 @@ A tileset descriptor, as returned by `describeTileset`. A collection appears in 
 | `extent` | `community.lexicon.location.bbox` | Bounding box of the tileset's records |
 | `references` | array of `collectionAttribution` | Collections the tileset doesn't carry but whose data its records include, such as the divisions named in a `within` relation |
 
-<a id="orgatgeotilepayload"></a>
 
 ## `org.atgeo.tilePayload`
 
@@ -273,7 +269,6 @@ What's inside a tile file.
 | `publishedAt` | string (datetime) | When the tileset was created |
 | `attribution` | array of `collectionAttribution` | One entry for every collection the tileset carries or references. The same list in every tile of the tileset, so one tile is enough to know what you've got and what licence it's under |
 
-<a id="tilerecord"></a>
 
 ### `tileRecord`
 

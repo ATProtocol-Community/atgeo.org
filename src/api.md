@@ -59,7 +59,6 @@ The live data currently covers mostly the US east coast. The global build is pen
 
 All four are `GET /xrpc/{nsid}`, all described by lexicons, and none needs authentication. Responses may include keys not documented here; ignore keys you don't recognize.
 
-<a id="gettiles"></a>
 
 ### `org.atgeo.getTiles`
 
@@ -103,7 +102,6 @@ GET /xrpc/org.atgeo.getTiles?dataset=overturemaps.org&collection=place&bbox=-75.
 
 Errors are listed in the order they're evaluated. A tileset with an overview band never raises `BboxTooLarge`.
 
-<a id="getplace"></a>
 
 ### `org.atgeo.getPlace`
 
@@ -142,7 +140,6 @@ GET /xrpc/org.atgeo.getPlace?uri=urn:atgeo:overturemaps.org:place:00458f1e-2120-
 | `PlaceNotFound` | A URN the server doesn't serve, a collection it doesn't carry, a malformed `atgeo` URN, or a URI that isn't a URN at all |
 | `InvalidRequest` | The `uri` is missing, or isn't a valid URI at all |
 
-<a id="describeservice"></a>
 
 ### `org.atgeo.describeService`
 
@@ -169,7 +166,6 @@ No parameters. Any you send are ignored (a cache-buster, say). It returns the de
 
 It has no errors of its own.
 
-<a id="describetileset"></a>
 
 ### `org.atgeo.describeTileset`
 
@@ -222,13 +218,12 @@ The descriptor for one tileset: what's in it, where, and under what terms.
 }
 ```
 
-`publishedAt` equals `publishedAt` in every tile. `extent` bounds the regular tiles. Vocabularies (`categories`, `attributes`, `containmentTypes`) are observed, not closed. The field definitions are on the [Lexicon page](/place/#orgatgeodefs). The descriptor describes one build, not a promise about the next.
+`publishedAt` equals `publishedAt` in every tile. `extent` bounds the regular tiles. Vocabularies (`categories`, `attributes`, `containmentTypes`) are observed, not closed. The field definitions are on the [Lexicon page](/place/#org-atgeo-defs). The descriptor describes one build, not a promise about the next.
 
 | Error | Description |
 |-------|-------------|
 | `TilesetNotFound` | No tileset has that slug |
 
-<a id="the-overview-band"></a>
 
 ## The overview band
 
@@ -254,7 +249,6 @@ GET /xrpc/org.atgeo.getTiles?dataset=openstreetmap.org&bbox=-80,35,-70,45
 
 Read the flag; don't infer anything from the length of a quadkey in a URL. The budget counts tiles across every tileset the request selects, so `dataset=overturemaps.org` with no collection selects both Overture tilesets and compares the combined count. If any selected tileset has no overview band, you get `BboxTooLarge` instead.
 
-<a id="the-precision-floor"></a>
 
 ## The precision floor
 
@@ -293,7 +287,7 @@ A tile is a set of place records associated with one quadkey cell (Web-Mercator 
 
 ### The tile payload
 
-A tile is one JSON object ([`org.atgeo.tilePayload`](/place/#orgatgeotilepayload)):
+A tile is one JSON object ([`org.atgeo.tilePayload`](/place/#org-atgeo-tilepayload)):
 
 | Key | Description |
 |-----|-------------|
@@ -339,7 +333,6 @@ Each record has up to three keys: `value`, the place (an [`org.atgeo.place`](/pl
 
 There's no version field. Lexicons evolve upgrade-only, so the rule that governs records governs tiles too: ignore keys you don't recognize.
 
-<a id="importance"></a>
 
 ## Importance
 
@@ -365,7 +358,6 @@ importance = round(60 * min(density / 10, 1) + 40 * min(ln(1 + population) / 20,
 
 with `density` averaged over the zoom-15 cells the locality's bounding box touches. So divisions other than localities top out at 40. The constants (10, 18, 20) are producer parameters, not protocol; another gazetteer could pick differently.
 
-<a id="containment-levels"></a>
 
 ## Containment levels
 
