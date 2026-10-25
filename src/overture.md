@@ -1,121 +1,120 @@
 ---
 layout: base.njk
-title: "Overture"
+title: "Overture Places"
 ---
 
-# Overture
+# Overture Places
 
-Collection: `org.atgeo.places.overture.place`
+The [Overture Maps](https://overturemaps.org/) places theme is a monthly-published merge of several upstream datasets into businesses, landmarks and other points of interest (tens of millions worldwide; the live build has about 7.7 million so far, because it only covers the eastern part of North America). places.atgeo.org serves it as a collection.
 
-ATGeo imports points of interest from the [Overture Maps](https://docs.overturemaps.org/) places dataset, an open data project providing freely available global map data. The places theme is licensed under the [CDLA Permissive 2.0](https://cdla.dev/permissive-2-0/) license. See the Overture [attribution documentation](https://docs.overturemaps.org/attribution/) for details.
+| | |
+|---|---|
+| Dataset | `overturemaps.org` |
+| Collection | `place` |
+| Tileset slug | `overture-place` |
+| Locations | a `geo` point, plus an `address` when Overture has one |
+| Licences | [CDLA Permissive 2.0](https://cdla.dev/permissive-2-0/), [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0), [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/legalcode) |
+| Attribution | [Overture attribution](https://docs.overturemaps.org/attribution/) |
 
-## Example record
+The tile and the tileset descriptor both say which Overture release they were built from (`release`, e.g. `2026-08-19.0`).
 
-```json
-{
-  "$type": "org.atgeo.place",
-  "collection": "org.atgeo.places.overture.place",
-  "rkey": "ef44c6c0-470d-4cfd-929e-54d64775dfd7",
-  "name": "CoffeeShop",
-  "variants": [],
-  "locations": [
-    {
-      "$type": "community.lexicon.location.geo",
-      "latitude": "37.747057",
-      "longitude": "-122.418816"
-    },
-    {
-      "$type": "community.lexicon.location.address",
-      "country": "US",
-      "locality": "San Francisco",
-      "postalCode": "94110-4503",
-      "region": "CA",
-      "street": "3139 Mission St"
-    }
-  ],
-  "attributes": {
-    "id": "ef44c6c0-470d-4cfd-929e-54d64775dfd7",
-    "categories": {
-      "primary": "coffee_shop",
-      "alternate": ["cafe", "bakery"]
-    },
-    "names": {
-      "primary": "CoffeeShop",
-      "common": null,
-      "rules": null
-    },
-    "brand": {
-      "names": {
-        "primary": null,
-        "common": null,
-        "rules": null
-      },
-      "wikidata": null
-    },
-    "confidence": "0.982",
-    "phones": ["+14153683802"],
-    "emails": ["w@subscribecoffeeshop.com"],
-    "websites": ["http://www.subscribecoffeeshop.com/"],
-    "socials": ["https://www.facebook.com/269421059827722"],
-    "sources": [
-      {
-        "dataset": "meta",
-        "record_id": "269421059827722",
-        "confidence": 0.939,
-        "license": "CDLA-Permissive-2.0",
-        "property": "",
-        "update_time": "2026-03-09T00:00:00.000Z"
-      }
-    ],
-    "version": 7
-  }
-}
-```
+## Identity
+
+The `origin` is `urn:atgeo:overturemaps.org:place:{id}`, where the id is Overture's [GERS](https://docs.overturemaps.org/gers/) id.
+
+One caveat: upstream ids are only as stable as the upstream makes them. Overture replaced every GERS id in release `2025-06-25.0`, so an id you saved before that date won't resolve against current data. If you've stored old ids, they're now just strings.
 
 ## Attributes
 
-The following fields appear in the `attributes` object of Overture place records:
+`attributes` carries Overture's own fields, passed through. Fields that Overture doesn't have for a place are left out, so don't assume any of these exist. What the live server sends today:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Overture's unique place identifier |
-| `categories` | object | Place categories (see below) |
-| `names` | object | Overture name variants (see below) |
-| `brand` | object | Brand information: `names` (with `primary`, `common`, `rules`) and `wikidata` ID |
-| `confidence` | string | Overture's confidence score for the record (0–1) |
-| `phones` | string[] | Phone numbers |
-| `emails` | string[] | Email addresses |
-| `websites` | string[] | Website URLs |
-| `socials` | string[] | Social media profile URLs |
-| `sources` | object[] | Provenance information (see below) |
-| `version` | integer | Record version number |
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | string | The GERS id again |
+| `names` | object | `primary`, plus `common` (language to name) and `rules`, which are `null` when there's nothing there |
+| `categories` | object | `primary` (e.g. `nutritionist`), and `alternate`, a list |
+| `brand` | object | `names` and `wikidata`, mostly nulls for independents |
+| `confidence` | string | Overture's confidence that the place exists, 0 to 1, as a decimal string (`"0.920"`) |
+| `websites`, `socials`, `emails`, `phones` | string[] | Contact details |
+| `version` | integer | The record's version in Overture |
+| `sources` | object[] | Where each piece of the record came from |
 
-### `categories`
+Numbers with fractions are strings because the AT Protocol data model has no floats (see the [FAQ](/faq/)). Integers like `version` stay integers.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `primary` | string | Primary category (e.g., `"coffee_shop"`, `"community_services_non_profits"`) |
-| `alternate` | string[] | Additional categories (e.g., `["cafe", "bakery"]`) |
+Each `sources` entry names the upstream `dataset` (live records show `meta`, `Microsoft`, `Foursquare`, `BrightQuery`, `AllThePlaces`, and Overture's own `Overture` and `Overture-signals`), the `record_id` in that dataset, the `property` it supplied, its `license`, `update_time`, `confidence`, and a few more provenance fields (`provider`, `resource`, `version`, `between`). Overture is a merge, and this is where it tells you what it merged. Foursquare is one of Overture's contributors; ATGeo itself no longer serves Foursquare directly.
 
-### `names`
+The `categories` values in the tileset descriptor are Overture's primary categories, such as `restaurant` or `beauty_salon`, with counts.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `primary` | string | Primary name in the Overture dataset |
-| `common` | object | Common name translations (may be null) |
-| `rules` | object | Name rules/variants (may be null) |
+## Addresses
 
-Note: The top-level `name` field in the Place record holds the primary name. The `attributes.names` object contains Overture's own name metadata.
+When Overture has an address, the place gets a second location, `community.lexicon.location.address`, alongside the point: `country`, `region`, `locality`, `street` and `postalCode`. A place can have either or both of the location types; look at `$type`.
 
-### `sources`
+## Variants
 
-Each entry in the `sources` array describes where the data came from:
+`variants` come from Overture's multilingual `names.common` and its rule-based names (short, official and so on). Many places have none.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `dataset` | string | Source dataset (e.g., `"meta"`, `"Overture"`) |
-| `record_id` | string | ID in the source dataset |
-| `confidence` | number | Source-level confidence score |
-| `license` | string | Data license (e.g., `"CDLA-Permissive-2.0"`) |
-| `property` | string | Which property this source applies to |
-| `update_time` | string | When the source data was last updated (ISO 8601) |
+## Containment and importance
+
+`relations.within` lists the [Overture Divisions](/divisions/) containing the place, broadest first. `importance` (0 to 100) is computed per tileset from how busy the surroundings are and how rare the category is, and it only means something relative to other `overture-place` records. It rides beside the record in a tile, not inside it. The [API page](/api/) has the formula.
+
+## Example
+
+A real record from a live tile in Center City, Philadelphia (trimmed):
+
+```json
+{
+  "value": {
+    "$type": "org.atgeo.place",
+    "origin": "urn:atgeo:overturemaps.org:place:012a5d0a-e233-447f-99e8-7d835ca61296",
+    "name": "Hleap Nutrition",
+    "locations": [
+      {
+        "$type": "community.lexicon.location.geo",
+        "latitude": "39.955658",
+        "longitude": "-75.169613"
+      },
+      {
+        "$type": "community.lexicon.location.address",
+        "country": "US",
+        "region": "PA",
+        "locality": "Philadelphia",
+        "street": "100 N 18th St suite 300",
+        "postalCode": "19103"
+      }
+    ],
+    "variants": [],
+    "attributes": {
+      "id": "012a5d0a-e233-447f-99e8-7d835ca61296",
+      "names": { "primary": "Hleap Nutrition", "common": null, "rules": null },
+      "categories": {
+        "primary": "nutritionist",
+        "alternate": ["naturopathic_holistic", "health_and_medical"]
+      },
+      "websites": ["https://www.hleapnutrition.com"],
+      "phones": ["+12158218705"],
+      "brand": { "wikidata": null, "names": { "primary": null, "common": null, "rules": null } },
+      "confidence": "0.920",
+      "version": 9,
+      "sources": [
+        {
+          "dataset": "meta",
+          "license": "CDLA-Permissive-2.0",
+          "record_id": "112831242678436",
+          "update_time": "2026-08-10T00:00:00.000Z",
+          ...
+        },
+        ...
+      ]
+    },
+    "relations": {
+      "within": [
+        { "uri": "urn:atgeo:overturemaps.org:division:f39eb4af-5206-481b-b19e-bd784ded3f05", "name": "United States", "type": "country" },
+        ...
+      ]
+    }
+  },
+  "importance": 60
+}
+```
+
+(The `...` marks trimmed content; the real record is valid JSON without them. `socials` and `emails` were also dropped from the example.)

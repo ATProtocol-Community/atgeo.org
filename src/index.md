@@ -14,4 +14,6 @@ ATGeo provides a geographic place lexicon for [AT Protocol](https://atproto.com/
 {% placeDisplay %}
 </div>
 
-The ATGeo [data model](/place/) describes how points of interest are represented. The [XRPC API](/api/) returns the map tiles covering a region, so apps can search the venue databases themselves. See [Usage](/usage/) for guidance on integrating the lexicon into your apps.
+The map searches above run in your browser, using the JavaScript client; the server only ever sees the map tiles you ask for, not what you type. The data is mostly the US east coast for now.
+
+The ATGeo [lexicon](/place/) describes how points of interest are represented. The [XRPC API](/api/) returns the map tiles covering a region, so apps can search the venue databases themselves, and the [client SDKs](/sdk/) do that for you in JavaScript, Swift, Kotlin, Python and Rust. See [Usage](/usage/) for guidance on integrating the lexicon into your apps.

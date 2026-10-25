@@ -7,11 +7,15 @@ title: "Usage"
 
 ## Gazetteer API
 
-An ATGeo *Gazetteer* is an XRPC lookup service that serves authoritative place data in ATGeo `Place` formatted JSON.
+An ATGeo *Gazetteer* is an XRPC service that serves authoritative place data in ATGeo `Place` formatted JSON.
 
-The **places.atgeo.org** gazetteer lookup service allows you to pull points of interest (PoIs) from Foursquare Open Source Places, Overture Maps, and OpenStreetMap. Who's on First is coming shortly.
+The **places.atgeo.org** gazetteer lets you pull points of interest (PoIs) from OpenStreetMap and Overture Maps, along with the administrative areas that contain them. Coverage is mostly the US east coast for now.
 
-The gazetteer service is built using Free Software and Free Data. The public server is community supported, so please go it easy on it, or consider [deploying your own](https://github.com/schuyler/garganorn/) if your app takes off.
+The gazetteer is built using Free Software and Free Data. The public server is community supported, so please go easy on it, or consider [deploying your own](https://github.com/schuyler/garganorn/) if your app takes off.
+
+## The easy way is a client SDK
+
+There are [client SDKs](/sdk/) for JavaScript, Swift, Kotlin, Python and Rust. You give one a region and some text, and it fetches the tiles, searches them locally and hands back ranked places. It also snaps your location to the coarse grid the server accepts, so the precise location never leaves the device. You can call the [XRPC API](/api/) directly, but the SDK already does the careful bits. The SDKs are pre-release, so expect rough edges.
 
 ## Never automatically store user locations, EVER
 
@@ -37,7 +41,9 @@ When AT Protocol applications use the same lexicon to reference and describe pla
 
 The ATGeo `Place` lexicon is designed to function both as the description of a place, and as a reference to a place.
 
-ATGeo lookup services, like _places.atgeo.org_, return JSON objects that can be incorporated directly into AT Protocol records without modification, because they follow the `org.atgeo.Place` lexicon definition and use the AT Protocol data model.
+ATGeo gazetteers, like _places.atgeo.org_, return JSON objects that can be incorporated directly into AT Protocol records without modification, because they follow the `org.atgeo.place` lexicon definition and use the AT Protocol data model.
+
+A copy keeps the gazetteer's `origin`. Licensing and attribution sit in the tile the place came from, not in the place, so if you pass data along you're the one conveying it and owe the source its credit. The [OpenStreetMap](/osm/), [Overture Places](/overture/) and [Overture Divisions](/divisions/) pages say what each one needs.
 
 ### Extensibility
 
@@ -45,10 +51,8 @@ The `Place` lexicon functions like an `interface` in Golang or duck-typing in Py
 
 ### Traceability
 
-There's a lot of place data outside the ATmosphere, like in OpenStreetMap or Foursquare. We call this *reference data*.
+There's a lot of place data outside the ATmosphere, like in OpenStreetMap or Overture Maps. We call this *reference data*.
 
-Every reference place record in ATGeo has a globally unique key that specifies where it came from, and what its unique ID was in the original dataset. This means that place records that originate from some off-protocol authority, like OpenStreetMap or Overture Maps, can be traced back to that origin, and changes tracked over time.
+Every reference place in ATGeo has an `origin`, a URN of the form `urn:atgeo:{dataset}:{collection}:{id}`, that says where it came from and what its ID was in the original dataset. This means that place records that originate from some off-protocol authority can be traced back to that origin, and changes tracked over time.
 
-Composability and traceability combine to allow applications to safely publish records that discard place attributes they don't need. Other applications can recover the discarded attributes by looking up the record key in a gazetteer service, if needed, or by searching the original dataset.
-
-
+Composability and traceability combine to allow applications to safely publish records that discard place attributes they don't need. Other applications can recover the discarded attributes by looking up the `origin` in a gazetteer, if needed, or by going to the original dataset.
