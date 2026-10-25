@@ -108,7 +108,7 @@ The first is cached for an hour, the second isn't. Missing or wrong-typed fields
 
 ## Speed
 
-It's pure Python, and dense regions show it. For the kilometer around Philadelphia's City Hall (47 tiles, 40 MB), a cold search on CPython 3.13 takes about a second, nearly all of it parsing JSON. Fine for a script, a notebook or a request handler; slow for search-as-you-type. The async client parses and scores on its own threads so the event loop keeps running.
+It's pure Python, and dense regions show it. For the kilometer around Philadelphia's City Hall (47 tiles, 40 MB), a cold search with no text on CPython 3.13 takes about a second, nearly all of it parsing JSON; scoring text adds 0.4 to 0.8 s more. Fine for a script, a notebook or a request handler; slow for search-as-you-type. The async client parses and scores on its own threads so the event loop keeps running.
 
 ## Conformance
 

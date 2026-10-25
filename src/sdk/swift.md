@@ -83,7 +83,7 @@ Here the "get place" call follows Swift's naming guidelines, so it's `place(orig
 
 ### `describeService() -> ServiceDescription` and `describeTileset(_ slug:) -> Tileset`
 
-As in the other SDKs: the first is cached for an hour, the second isn't. Every field is optional; a field the server drops or retypes comes back `nil`.
+As in the other SDKs: the first is cached for an hour, the second isn't. Every scalar field is optional; a field the server drops or retypes comes back `nil`. The `tilesets` and `collections` lists are always arrays, empty when the server sent none.
 
 ## Errors
 
