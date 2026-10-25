@@ -1,324 +1,254 @@
 {
- "collection": "org.atgeo.places.osm",
- "source": "https://www.openstreetmap.org/",
- "license": "https://opendatacommons.org/licenses/odbl/1-0/",
- "generated_at": "2026-08-20T21:52:39Z",
+ "publishedAt": "2026-10-14T07:54:27Z",
+ "attribution": [
+  {
+   "dataset": "openstreetmap.org",
+   "collection": "node",
+   "release": "2026-03-16T01:00:01Z",
+   "source": "https://www.openstreetmap.org/",
+   "licenses": [
+    "https://opendatacommons.org/licenses/odbl/1-0/"
+   ],
+   "attribution": "https://www.openstreetmap.org/copyright"
+  },
+  {
+   "dataset": "openstreetmap.org",
+   "collection": "way",
+   "release": "2026-03-16T01:00:01Z",
+   "source": "https://www.openstreetmap.org/",
+   "licenses": [
+    "https://opendatacommons.org/licenses/odbl/1-0/"
+   ],
+   "attribution": "https://www.openstreetmap.org/copyright"
+  },
+  {
+   "dataset": "openstreetmap.org",
+   "collection": "relation",
+   "release": "2026-03-16T01:00:01Z",
+   "source": "https://www.openstreetmap.org/",
+   "licenses": [
+    "https://opendatacommons.org/licenses/odbl/1-0/"
+   ],
+   "attribution": "https://www.openstreetmap.org/copyright"
+  },
+  {
+   "dataset": "overturemaps.org",
+   "collection": "division",
+   "release": "2026-08-19.0",
+   "source": "https://overturemaps.org/",
+   "attribution": "https://docs.overturemaps.org/attribution/",
+   "licenses": [
+    "https://opendatacommons.org/licenses/odbl/1-0/",
+    "https://creativecommons.org/licenses/by/4.0/legalcode"
+   ]
+  }
+ ],
  "records": [
   {
-   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:4548624461",
-   "cid": null,
    "value": {
     "$type": "org.atgeo.place",
-    "rkey": "node:4548624461",
-    "name": "Bistro La Chaumière",
-    "importance": 46,
+    "origin": "urn:atgeo:openstreetmap.org:node:1015369635",
+    "name": "Swann Memorial Fountain",
     "locations": [
      {
       "$type": "community.lexicon.location.geo",
-      "latitude": "37.775185",
-      "longitude": "-122.438003"
+      "latitude": "39.957937",
+      "longitude": "-75.170592"
      }
     ],
-    "variants": []
-   }
+    "variants": [],
+    "attributes": {
+     "website": "https://www.associationforpublicart.org/artwork/swann-memorial-fountain/",
+     "wikidata": "Q7653613",
+     "amenity": "fountain"
+    },
+    "relations": {
+     "within": [
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:f39eb4af-5206-481b-b19e-bd784ded3f05",
+       "name": "United States",
+       "type": "country"
+      },
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:9b885f43-e59d-4249-b114-4d8853d66bfb",
+       "name": "Pennsylvania",
+       "type": "region"
+      },
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:1a04f6e5-dd95-4e67-b25d-777814f7c93f",
+       "name": "Philadelphia County",
+       "type": "county"
+      },
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:10ddec2b-285d-477a-a39b-bb3209735f9b",
+       "name": "Philadelphia",
+       "type": "locality"
+      },
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:407ce93b-dadf-49eb-b25b-6942e077c089",
+       "name": "Center City",
+       "type": "macrohood"
+      }
+     ]
+    }
+   },
+   "importance": 61
   },
   {
-   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:4556415854",
-   "cid": null,
    "value": {
     "$type": "org.atgeo.place",
-    "rkey": "node:4556415854",
-    "name": "Laundré",
-    "importance": 59,
+    "origin": "urn:atgeo:openstreetmap.org:way:100400089",
+    "name": "Disque Hall",
     "locations": [
      {
       "$type": "community.lexicon.location.geo",
-      "latitude": "37.781055",
-      "longitude": "-122.439201"
+      "latitude": "39.954489",
+      "longitude": "-75.187633"
      }
     ],
-    "variants": []
-   }
+    "variants": [],
+    "attributes": {
+     "addr:city": "Philadelphia",
+     "addr:postcode": "19104",
+     "building": "university"
+    },
+    "relations": {
+     "within": [
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:f39eb4af-5206-481b-b19e-bd784ded3f05",
+       "name": "United States",
+       "type": "country"
+      },
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:9b885f43-e59d-4249-b114-4d8853d66bfb",
+       "name": "Pennsylvania",
+       "type": "region"
+      },
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:1a04f6e5-dd95-4e67-b25d-777814f7c93f",
+       "name": "Philadelphia County",
+       "type": "county"
+      },
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:10ddec2b-285d-477a-a39b-bb3209735f9b",
+       "name": "Philadelphia",
+       "type": "locality"
+      },
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:8ed36b4d-9b0e-44f4-8d19-eaed147d4121",
+       "name": "West Philadelphia",
+       "type": "macrohood"
+      }
+     ]
+    }
+   },
+   "importance": 50
   },
   {
-   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:647656706",
-   "cid": null,
    "value": {
     "$type": "org.atgeo.place",
-    "rkey": "node:647656706",
-    "name": "Cafe Réveille",
-    "importance": 48,
+    "origin": "urn:atgeo:openstreetmap.org:relation:11010096",
+    "name": "William Penn House",
     "locations": [
      {
       "$type": "community.lexicon.location.geo",
-      "latitude": "37.771057",
-      "longitude": "-122.432071"
+      "latitude": "39.952485",
+      "longitude": "-75.172596"
      }
     ],
-    "variants": []
-   }
+    "variants": [],
+    "attributes": {
+     "addr:city": "Philadelphia",
+     "addr:housenumber": "1919",
+     "addr:postcode": "19103",
+     "addr:street": "Chestnut Street",
+     "building": "apartments"
+    },
+    "relations": {
+     "within": [
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:f39eb4af-5206-481b-b19e-bd784ded3f05",
+       "name": "United States",
+       "type": "country"
+      },
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:9b885f43-e59d-4249-b114-4d8853d66bfb",
+       "name": "Pennsylvania",
+       "type": "region"
+      },
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:1a04f6e5-dd95-4e67-b25d-777814f7c93f",
+       "name": "Philadelphia County",
+       "type": "county"
+      },
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:10ddec2b-285d-477a-a39b-bb3209735f9b",
+       "name": "Philadelphia",
+       "type": "locality"
+      },
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:407ce93b-dadf-49eb-b25b-6942e077c089",
+       "name": "Center City",
+       "type": "macrohood"
+      }
+     ]
+    }
+   },
+   "importance": 55
   },
   {
-   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:10244015348",
-   "cid": null,
    "value": {
     "$type": "org.atgeo.place",
-    "rkey": "node:10244015348",
-    "name": "Song Tea & Ceramics",
-    "importance": 62,
+    "origin": "urn:atgeo:openstreetmap.org:node:10578141484",
+    "name": "Barber on 24th",
     "locations": [
      {
       "$type": "community.lexicon.location.geo",
-      "latitude": "37.785953",
-      "longitude": "-122.435384"
+      "latitude": "39.946653",
+      "longitude": "-75.180610"
      }
     ],
-    "variants": [
-     {
-      "name": "Song Tea and Ceramics",
-      "type": "alternate"
-     }
-    ]
-   }
-  },
-  {
-   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:11349537575",
-   "cid": null,
-   "value": {
-    "$type": "org.atgeo.place",
-    "rkey": "node:11349537575",
-    "name": "Popeyes",
-    "importance": 53,
-    "locations": [
-     {
-      "$type": "community.lexicon.location.geo",
-      "latitude": "37.783208",
-      "longitude": "-122.432296"
-     }
-    ],
-    "variants": [
-     {
-      "name": "Popeyes Louisiana Kitchen",
-      "type": "official"
-     }
-    ]
-   }
-  },
-  {
-   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:10177572477",
-   "cid": null,
-   "value": {
-    "$type": "org.atgeo.place",
-    "rkey": "node:10177572477",
-    "name": "DaVita Dialysis",
-    "importance": 51,
-    "locations": [
-     {
-      "$type": "community.lexicon.location.geo",
-      "latitude": "37.782570",
-      "longitude": "-122.448403"
-     }
-    ],
-    "variants": []
-   }
-  },
-  {
-   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:10575364925",
-   "cid": null,
-   "value": {
-    "$type": "org.atgeo.place",
-    "rkey": "node:10575364925",
-    "name": "reWAXation",
-    "importance": 51,
-    "locations": [
-     {
-      "$type": "community.lexicon.location.geo",
-      "latitude": "37.778014",
-      "longitude": "-122.438243"
-     }
-    ],
-    "variants": []
-   }
-  },
-  {
-   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:10612130303",
-   "cid": null,
-   "value": {
-    "$type": "org.atgeo.place",
-    "rkey": "node:10612130303",
-    "name": "Firecrawl",
-    "importance": 50,
-    "locations": [
-     {
-      "$type": "community.lexicon.location.geo",
-      "latitude": "37.771585",
-      "longitude": "-122.435579"
-     }
-    ],
-    "variants": []
-   }
-  },
-  {
-   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:10916864845",
-   "cid": null,
-   "value": {
-    "$type": "org.atgeo.place",
-    "rkey": "node:10916864845",
-    "name": "Q Spa",
-    "importance": 51,
-    "locations": [
-     {
-      "$type": "community.lexicon.location.geo",
-      "latitude": "37.771155",
-      "longitude": "-122.432089"
-     }
-    ],
-    "variants": []
-   }
-  },
-  {
-   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:11071758780",
-   "cid": null,
-   "value": {
-    "$type": "org.atgeo.place",
-    "rkey": "node:11071758780",
-    "name": "San Francisco Fire Credit Union",
-    "importance": 50,
-    "locations": [
-     {
-      "$type": "community.lexicon.location.geo",
-      "latitude": "37.787022",
-      "longitude": "-122.447269"
-     }
-    ],
-    "variants": []
-   }
-  },
-  {
-   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:11279968191",
-   "cid": null,
-   "value": {
-    "$type": "org.atgeo.place",
-    "rkey": "node:11279968191",
-    "name": "Bright Horizons",
-    "importance": 50,
-    "locations": [
-     {
-      "$type": "community.lexicon.location.geo",
-      "latitude": "37.782007",
-      "longitude": "-122.446237"
-     }
-    ],
-    "variants": []
-   }
-  },
-  {
-   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:11334989402",
-   "cid": null,
-   "value": {
-    "$type": "org.atgeo.place",
-    "rkey": "node:11334989402",
-    "name": "Pizza Inferno",
-    "importance": 51,
-    "locations": [
-     {
-      "$type": "community.lexicon.location.geo",
-      "latitude": "37.786250",
-      "longitude": "-122.433200"
-     }
-    ],
-    "variants": []
-   }
-  },
-  {
-   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:12745936139",
-   "cid": null,
-   "value": {
-    "$type": "org.atgeo.place",
-    "rkey": "node:12745936139",
-    "name": "Victorian Manor",
-    "importance": 51,
-    "locations": [
-     {
-      "$type": "community.lexicon.location.geo",
-      "latitude": "37.778250",
-      "longitude": "-122.435743"
-     }
-    ],
-    "variants": []
-   }
-  },
-  {
-   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:13163731721",
-   "cid": null,
-   "value": {
-    "$type": "org.atgeo.place",
-    "rkey": "node:13163731721",
-    "name": "'N Motion Fitness",
-    "importance": 50,
-    "locations": [
-     {
-      "$type": "community.lexicon.location.geo",
-      "latitude": "37.773259",
-      "longitude": "-122.450663"
-     }
-    ],
-    "variants": []
-   }
-  },
-  {
-   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:13639606766",
-   "cid": null,
-   "value": {
-    "$type": "org.atgeo.place",
-    "rkey": "node:13639606766",
-    "name": "Effin Relax",
-    "importance": 50,
-    "locations": [
-     {
-      "$type": "community.lexicon.location.geo",
-      "latitude": "37.779029",
-      "longitude": "-122.438781"
-     }
-    ],
-    "variants": []
-   }
-  },
-  {
-   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:1784908622",
-   "cid": null,
-   "value": {
-    "$type": "org.atgeo.place",
-    "rkey": "node:1784908622",
-    "name": "Fly Bar & Restaurant",
-    "importance": 50,
-    "locations": [
-     {
-      "$type": "community.lexicon.location.geo",
-      "latitude": "37.776762",
-      "longitude": "-122.437949"
-     }
-    ],
-    "variants": []
-   }
-  },
-  {
-   "uri": "https://places.atgeo.org/org.atgeo.places.osm/node:1958701051",
-   "cid": null,
-   "value": {
-    "$type": "org.atgeo.place",
-    "rkey": "node:1958701051",
-    "name": "Things Lucky",
-    "importance": 51,
-    "locations": [
-     {
-      "$type": "community.lexicon.location.geo",
-      "latitude": "37.770819",
-      "longitude": "-122.447244"
-     }
-    ],
-    "variants": []
-   }
+    "variants": [],
+    "attributes": {
+     "addr:city": "Philadelphia",
+     "addr:housenumber": "2401",
+     "addr:postcode": "19146",
+     "addr:street": "Lombard Street",
+     "opening_hours": "Mo-Fr 10:00-20:00; Sa-Su 10:00-18:00",
+     "website": "https://barberon24th.com/",
+     "shop": "hairdresser"
+    },
+    "relations": {
+     "within": [
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:f39eb4af-5206-481b-b19e-bd784ded3f05",
+       "name": "United States",
+       "type": "country"
+      },
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:9b885f43-e59d-4249-b114-4d8853d66bfb",
+       "name": "Pennsylvania",
+       "type": "region"
+      },
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:1a04f6e5-dd95-4e67-b25d-777814f7c93f",
+       "name": "Philadelphia County",
+       "type": "county"
+      },
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:10ddec2b-285d-477a-a39b-bb3209735f9b",
+       "name": "Philadelphia",
+       "type": "locality"
+      },
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:407ce93b-dadf-49eb-b25b-6942e077c089",
+       "name": "Center City",
+       "type": "macrohood"
+      }
+     ]
+    }
+   },
+   "importance": 42
   }
  ]
 }

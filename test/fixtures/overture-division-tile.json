@@ -1,0 +1,168 @@
+{
+ "publishedAt": "2026-10-14T07:33:00Z",
+ "attribution": [
+  {
+   "dataset": "overturemaps.org",
+   "collection": "division",
+   "release": "2026-08-19.0",
+   "source": "https://overturemaps.org/",
+   "attribution": "https://docs.overturemaps.org/attribution/",
+   "licenses": [
+    "https://opendatacommons.org/licenses/odbl/1-0/",
+    "https://creativecommons.org/licenses/by/4.0/legalcode"
+   ]
+  }
+ ],
+ "records": [
+  {
+   "value": {
+    "$type": "org.atgeo.place",
+    "origin": "urn:atgeo:overturemaps.org:division:10ddec2b-285d-477a-a39b-bb3209735f9b",
+    "name": "Philadelphia",
+    "locations": [
+     {
+      "$type": "community.lexicon.location.bbox",
+      "north": "40.137959",
+      "south": "39.867005",
+      "east": "-74.955831",
+      "west": "-75.280266"
+     }
+    ],
+    "variants": [
+     {
+      "name": "Beeʼeldíílsání",
+      "type": "alternate",
+      "language": "nv"
+     },
+     {
+      "name": "Filaadelfiya",
+      "type": "alternate",
+      "language": "wal"
+     },
+     {
+      "name": "Filadelfia",
+      "type": "alternate",
+      "language": "co"
+     }
+    ],
+    "attributes": {
+     "subtype": "locality",
+     "country": "US",
+     "region": "US-PA",
+     "wikidata": "Q1345",
+     "population": 1603797
+    },
+    "relations": {
+     "within": [
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:f39eb4af-5206-481b-b19e-bd784ded3f05",
+       "name": "United States",
+       "type": "country"
+      },
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:9b885f43-e59d-4249-b114-4d8853d66bfb",
+       "name": "Pennsylvania",
+       "type": "region"
+      },
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:1a04f6e5-dd95-4e67-b25d-777814f7c93f",
+       "name": "Philadelphia County",
+       "type": "county"
+      }
+     ]
+    }
+   },
+   "importance": 51
+  },
+  {
+   "value": {
+    "$type": "org.atgeo.place",
+    "origin": "urn:atgeo:overturemaps.org:division:9b885f43-e59d-4249-b114-4d8853d66bfb",
+    "name": "Pennsylvania",
+    "locations": [
+     {
+      "$type": "community.lexicon.location.bbox",
+      "north": "42.516133",
+      "south": "39.719766",
+      "east": "-74.689672",
+      "west": "-80.521091"
+     }
+    ],
+    "variants": [
+     {
+      "name": "An Pheinnsiolváin",
+      "type": "alternate",
+      "language": "ga"
+     },
+     {
+      "name": "Commonwealth of Pennsylvania",
+      "type": "official"
+     },
+     {
+      "name": "Durum The Keystone",
+      "type": "alternate",
+      "language": "tr"
+     }
+    ],
+    "attributes": {
+     "subtype": "region",
+     "country": "US",
+     "region": "US-PA",
+     "wikidata": "Q1400",
+     "population": 13078751
+    },
+    "relations": {
+     "within": [
+      {
+       "uri": "urn:atgeo:overturemaps.org:division:f39eb4af-5206-481b-b19e-bd784ded3f05",
+       "name": "United States",
+       "type": "country"
+      }
+     ]
+    }
+   },
+   "importance": 33
+  },
+  {
+   "value": {
+    "$type": "org.atgeo.place",
+    "origin": "urn:atgeo:overturemaps.org:division:f39eb4af-5206-481b-b19e-bd784ded3f05",
+    "name": "United States",
+    "locations": [
+     {
+      "$type": "community.lexicon.location.bbox",
+      "north": "71.386828",
+      "south": "18.910694",
+      "east": "179.772601",
+      "west": "-179.147851"
+     }
+    ],
+    "variants": [
+     {
+      "name": ".iunaited.steits.",
+      "type": "alternate",
+      "language": "jbo"
+     },
+     {
+      "name": "ABD",
+      "type": "short",
+      "language": "tr"
+     },
+     {
+      "name": "ABŞ",
+      "type": "short",
+      "language": "az"
+     }
+    ],
+    "attributes": {
+     "subtype": "country",
+     "country": "US",
+     "wikidata": "Q30",
+     "population": 331449281
+    },
+    "relations": {}
+   },
+   "importance": 39
+  }
+ ]
+}
