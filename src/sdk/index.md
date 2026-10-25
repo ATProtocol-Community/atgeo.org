@@ -59,7 +59,7 @@ A search covers one dataset, optionally narrowed to a collection:
 
 So the default is Overture places. `dataset: "openstreetmap.org"` alone returns nodes, ways and relations in one list, which is usually what you want from OSM, since the element type is an accident of how the mapper drew it. A collection-filtered search keeps only records whose `origin` starts with `urn:atgeo:{dataset}:{collection}:`.
 
-There is no merged ranking across datasets. `importance` is only comparable within a tileset: an Overture place scoring 62 and an OSM place scoring 62 aren't equally important. If you want both, make two calls and decide how to interleave them. See [Overture Places](/overture/), [Overture Divisions](/divisions/) and [OpenStreetMap](/osm/) for what each dataset holds.
+There is no merged ranking across datasets. `importance` is comparable across one dataset's tilesets (Overture places rank against Overture divisions) but not across datasets: an Overture place scoring 62 and an OSM place scoring 62 aren't equally important. If you want both, make two calls and decide how to interleave them. See [Overture Places](/overture/), [Overture Divisions](/divisions/) and [OpenStreetMap](/osm/) for what each dataset holds.
 
 ## Regions
 
@@ -102,7 +102,7 @@ The Kotlin, Python and Rust SDKs also give hits `name` and `location` helpers; J
 
 A search result has two flags that mean different things:
 
-- `overview` is `true` when the region was too big for the server's tile budget, and the server answered with its coarse overview tiles instead: only the most important places (the top 10,000 by importance per tileset, plus every country, region and dependency for divisions). The results are a sample, not everything in the region. Show "zoom in for more".
+- `overview` is `true` when the region was too big for the server's tile budget, and the server answered with its coarse overview tiles instead: only the most important places (the top 10,000 by importance per tileset; for divisions, that keeps the countries, regions and dependencies). The results are a sample, not everything in the region. Show "zoom in for more".
 - `complete` is `false` when any tile failed to load. The results are partial.
 
 They're independent. `overview: true, complete: true` is a perfectly good answer. If you want the full set, search a smaller region. For a deeper look, see [the overview band](/api/#the-overview-band) in the XRPC docs.
