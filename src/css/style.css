@@ -481,6 +481,55 @@ input[type="button"]:disabled {
   color: #dc2626;
 }
 
+.query-status {
+  color: #555;
+  margin: 0 0 0.5rem;
+}
+
+#query-demo [hidden] {
+  display: none !important;
+}
+
+.query-client {
+  border-top: 1px dashed #d0d0c8;
+  padding-top: 0.75rem;
+}
+
+.query-log {
+  font-size: 0.8rem;
+  padding-left: 1.5rem;
+  margin: 0 0 0.75rem;
+  overflow-wrap: anywhere;
+}
+
+.query-log code {
+  font-size: 0.8rem;
+}
+
+/* ===== Place Facts ===== */
+
+.place-display-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.2rem 0.75rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+}
+
+.place-display-facts dt {
+  color: #666;
+}
+
+.place-display-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.place-display-facts code {
+  white-space: normal;
+  word-break: break-all;
+}
+
 /* ===== Place Results List ===== */
 
 .place-results-list {
@@ -641,11 +690,22 @@ input[type="button"]:disabled {
   color: #2a6496;
 }
 
-.sidebar ul li[aria-current="page"] a {
+.sidebar ul li[aria-current="page"] > a {
   font-weight: 600;
   color: #2a6496;
   border-left: 3px solid #2a6496;
   padding-left: calc(1.25rem - 3px);
+}
+
+.sidebar ul.sidebar-sub a {
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
+  padding-left: 2.25rem;
+  font-size: 0.9em;
+}
+
+.sidebar ul.sidebar-sub li[aria-current="page"] > a {
+  padding-left: calc(2.25rem - 3px);
 }
 
 .nav-toggle {
@@ -730,10 +790,15 @@ input[type="button"]:disabled {
     padding: 0.35em 0.5rem;
   }
 
-  .sidebar ul li[aria-current="page"] a {
+  .sidebar ul li[aria-current="page"] > a,
+  .sidebar ul.sidebar-sub li[aria-current="page"] > a {
     border-left: none;
     padding-left: 0.5rem;
     border-bottom: 2px solid #2a6496;
+  }
+
+  .sidebar.sidebar-open ul.sidebar-sub a {
+    padding-left: 1.5rem;
   }
 
   h1 {

@@ -1,223 +1,231 @@
-// Query demo implementation
+// API explorer: send the four org.atgeo queries as they are, or run a search through
+// @atgeo/client and watch every request it makes.
 
-(function () {
-  const BASE_URL = 'https://places.atgeo.org/xrpc/org.atgeo.getCoverage';
+import { createClient, SERVER } from './client.js';
+import { DATASETS, searchOptions, xrpcURL, highlightJson, escapeHtml } from './places.js';
 
-  function buildHTML() {
-    return `
-      <form class="query-form" id="query-demo-form" autocomplete="off">
-        <div class="query-form-fields">
-          <label class="query-field">
-            <span class="query-label">collection</span>
-            <select name="collection" id="qd-collection">
-              ${AtgeoSearch.COLLECTIONS.map(c => `<option value="${c.value}"${c.disabled ? ' disabled' : ''}>${c.label}${c.disabled ? ' (unavailable)' : ''}</option>`).join('')}
-            </select>
-          </label>
-          <label class="query-field">
-            <span class="query-label">q</span>
-            <input type="text" name="q" id="qd-q" placeholder="coffee" />
-          </label>
-          <label class="query-field">
-            <span class="query-label">bbox</span>
-            <input type="text" name="bbox" id="qd-bbox" value="-122.44,37.76,-122.42,37.78" />
-          </label>
-          <label class="query-field">
-            <span class="query-label">limit</span>
-            <input type="number" name="limit" id="qd-limit" value="5" min="1" max="100" />
-          </label>
-          <button type="button" class="icon-btn" id="qd-locate" aria-label="Use my location" title="Use my location"><img src="/assets/location-arrow-532530.svg" alt="" width="16" height="16"></button>
-          <button type="submit" class="icon-btn icon-btn-wide" id="qd-run" aria-label="Run Query" title="Run Query"><img src="/assets/search-alt-1-532551.svg" alt="" width="16" height="16"></button>
-          <button type="button" class="icon-btn icon-btn-wide" id="qd-match">Fetch tiles &amp; match</button>
-        </div>
-      </form>
+const METHODS = ['org.atgeo.getTiles', 'org.atgeo.getPlace', 'org.atgeo.describeService', 'org.atgeo.describeTileset'];
+const SLUGS = ['overture-place', 'osm', 'overture-division'];
+
+function buildHTML() {
+  return `
+    <form class="query-form" id="query-demo-form" autocomplete="off">
+      <div class="query-form-fields">
+        <label class="query-field">
+          <span class="query-label">method</span>
+          <select name="method" id="qd-method">
+            ${METHODS.map((m) => `<option value="${m}">${m.replace('org.atgeo.', '')}</option>`).join('')}
+          </select>
+        </label>
+        <label class="query-field" data-methods="org.atgeo.getTiles">
+          <span class="query-label">dataset</span>
+          <select name="dataset" id="qd-dataset">
+            ${DATASETS.map((d) => `<option value="${d.id}">${escapeHtml(d.label)}</option>`).join('')}
+          </select>
+        </label>
+        <label class="query-field" data-methods="org.atgeo.getTiles">
+          <span class="query-label">bbox</span>
+          <input type="text" name="bbox" id="qd-bbox" value="-75.17,39.95,-75.16,39.96" />
+        </label>
+        <label class="query-field" data-methods="org.atgeo.getPlace">
+          <span class="query-label">uri</span>
+          <input type="text" name="uri" id="qd-uri" value="urn:atgeo:openstreetmap.org:node:1015369635" />
+        </label>
+        <label class="query-field" data-methods="org.atgeo.describeTileset">
+          <span class="query-label">slug</span>
+          <select name="slug" id="qd-slug">
+            ${SLUGS.map((s) => `<option value="${s}">${s}</option>`).join('')}
+          </select>
+        </label>
+        <button type="submit" class="icon-btn icon-btn-wide" id="qd-run" aria-label="Send request" title="Send request"><img src="/assets/search-alt-1-532551.svg" alt="" width="16" height="16"></button>
+      </div>
       <div class="query-url" id="qd-url-display"></div>
-      <p>The URL above is the only request the server sees. <code>q</code> and <code>limit</code> apply locally to the tiles it lists.</p>
-      <div class="query-results" id="qd-results"></div>
-    `;
+      <div class="query-form-fields query-client" data-methods="org.atgeo.getTiles">
+        <label class="query-field">
+          <span class="query-label">text (never sent)</span>
+          <input type="text" name="text" id="qd-text" placeholder="coffee" />
+        </label>
+        <button type="button" class="icon-btn icon-btn-wide" id="qd-search">Search with @atgeo/client</button>
+      </div>
+    </form>
+    <div class="query-results" id="qd-results"></div>
+  `;
+}
+
+const $ = (id) => document.getElementById(id);
+
+function currentRequest() {
+  const method = $('qd-method').value;
+  let params = {};
+  if (method === 'org.atgeo.getTiles') {
+    params = { ...searchOptions($('qd-dataset').value), bbox: $('qd-bbox').value.trim() };
+  } else if (method === 'org.atgeo.getPlace') {
+    params = { uri: $('qd-uri').value.trim() };
+  } else if (method === 'org.atgeo.describeTileset') {
+    params = { slug: $('qd-slug').value };
   }
+  return { method, url: xrpcURL(SERVER, method, params) };
+}
 
-  function getParams() {
-    return {
-      collection: document.getElementById('qd-collection').value,
-      bbox: document.getElementById('qd-bbox').value.trim(),
-    };
+function updateForm() {
+  const method = $('qd-method').value;
+  document.querySelectorAll('#query-demo [data-methods]').forEach((el) => {
+    el.hidden = !el.dataset.methods.split(' ').includes(method);
+  });
+  const url = currentRequest().url;
+  // Break at '?' and '&' for readability
+  const [base, query] = url.split('?');
+  $('qd-url-display').textContent = query ? `${base}?\n  ${query.split('&').join('\n  &')}` : url;
+}
+
+function showLoading(resultsEl) {
+  resultsEl.innerHTML = '<span class="query-loading">Loading…</span>';
+}
+
+function showError(resultsEl, message) {
+  const span = document.createElement('span');
+  span.className = 'query-error';
+  span.textContent = message;
+  resultsEl.replaceChildren(span);
+}
+
+function jsonBlock(data) {
+  const pre = document.createElement('pre');
+  pre.innerHTML = `<code>${highlightJson(JSON.stringify(data, null, 2))}</code>`;
+  return pre;
+}
+
+async function withLoading(buttonId, task) {
+  const resultsEl = $('qd-results');
+  const button = $(buttonId);
+
+  button.disabled = true;
+  button.classList.add('loading');
+  showLoading(resultsEl);
+
+  try {
+    await task(resultsEl);
+  } catch (err) {
+    showError(resultsEl, err.message || 'Request failed');
+  } finally {
+    button.disabled = false;
+    button.classList.remove('loading');
   }
+}
 
-  function buildURL(params) {
-    const qs = new URLSearchParams(params).toString();
-    return qs ? `${BASE_URL}?${qs}` : BASE_URL;
-  }
-
-  function updateURLDisplay() {
-    const display = document.getElementById('qd-url-display');
-    if (!display) return;
-    const url = buildURL(getParams());
-    // Break at '?' for readability
-    const [base, query] = url.split('?');
-    if (query) {
-      const parts = query.split('&');
-      display.textContent = base + '?\n  ' + parts.join('\n  &');
-    } else {
-      display.textContent = url;
-    }
-  }
-
-  function highlightJSON(json) {
-    // Escape HTML first
-    const escaped = json
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-
-    return escaped.replace(
-      /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-      function (match) {
-        if (/^"/.test(match)) {
-          if (/:$/.test(match)) {
-            return `<span class="json-key">${match}</span>`;
-          }
-          return `<span class="json-string">${match}</span>`;
-        }
-        if (/true|false|null/.test(match)) {
-          return `<span class="json-bool">${match}</span>`;
-        }
-        return `<span class="json-number">${match}</span>`;
-      }
-    );
-  }
-
-  function showLoading(resultsEl) {
-    resultsEl.innerHTML = '<span class="query-loading">Loading\u2026</span>';
-  }
-
-  function showError(resultsEl, message) {
-    var span = document.createElement('span');
-    span.className = 'query-error';
-    span.textContent = message;
-    resultsEl.replaceChildren(span);
-  }
-
-  function showResult(resultsEl, data) {
-    const formatted = JSON.stringify(data, null, 2);
-    const highlighted = highlightJSON(formatted);
-    resultsEl.innerHTML = `<pre><code>${highlighted}</code></pre>`;
-  }
-
-  async function withLoading(buttonId, task) {
-    const resultsEl = document.getElementById('qd-results');
-    const button = document.getElementById(buttonId);
-
-    button.disabled = true;
-    button.classList.add('loading');
-    showLoading(resultsEl);
-
+// Sends the request exactly as shown, so a too-precise bbox comes back BboxTooPrecise.
+function runRequest() {
+  const { url } = currentRequest();
+  return withLoading('qd-run', async (resultsEl) => {
+    const resp = await fetch(url);
+    const text = await resp.text();
+    let body;
     try {
-      await task(resultsEl);
-    } catch (err) {
-      showError(resultsEl, err.message || 'Request failed');
-    } finally {
-      button.disabled = false;
-      button.classList.remove('loading');
+      body = JSON.parse(text);
+    } catch {
+      body = text;
     }
-  }
+    const status = document.createElement('p');
+    status.className = resp.ok ? 'query-status' : 'query-status query-error';
+    status.textContent = `HTTP ${resp.status}`;
+    resultsEl.replaceChildren(status, typeof body === 'string' ? Object.assign(document.createElement('pre'), { textContent: body }) : jsonBlock(body));
+  });
+}
 
-  function runQuery() {
-    const { collection, bbox } = getParams();
-    return withLoading('qd-run', async (resultsEl) => {
-      showResult(resultsEl, await AtgeoSearch.getCoverage(collection, bbox));
-    });
+function parseBbox(value) {
+  const parts = value.split(',').map((s) => Number(s.trim()));
+  if (parts.length !== 4 || !parts.every(Number.isFinite)) {
+    throw new Error('bbox must be four comma-separated numbers: minLon,minLat,maxLon,maxLat');
   }
+  return parts;
+}
 
-  function runMatch() {
-    const { collection, bbox } = getParams();
-    const q = document.getElementById('qd-q').value.trim();
-    const limit = parseInt(document.getElementById('qd-limit').value, 10) || 5;
-    return withLoading('qd-match', async (resultsEl) => {
-      const result = await AtgeoSearch.search({
-        collection,
-        bbox: bbox.split(',').map(Number),
-        q,
-        limit,
+// A fresh client each time, so its cache can't hide any request from the log.
+function runSearch() {
+  const text = $('qd-text').value.trim();
+  const datasetId = $('qd-dataset').value;
+  return withLoading('qd-search', async (resultsEl) => {
+    const bbox = parseBbox($('qd-bbox').value);
+    const log = [];
+    const atgeo = createClient({ onResponse: (entry) => log.push(entry) });
+    const result = await atgeo.searchPlaces({ region: { bbox }, text: text || undefined, ...searchOptions(datasetId) });
+
+    const parts = [];
+
+    const heading = document.createElement('p');
+    heading.textContent = `Every request the client made (${log.length}):`;
+    parts.push(heading);
+
+    const ol = document.createElement('ol');
+    ol.className = 'query-log';
+    for (const entry of log) {
+      const li = document.createElement('li');
+      const code = document.createElement('code');
+      code.textContent = entry.url;
+      li.append(entry.error ? 'failed ' : `${entry.status} `, code);
+      ol.appendChild(li);
+    }
+    parts.push(ol);
+
+    if (text) {
+      const leaked = log.some((e) => {
+        const u = e.url.toLowerCase();
+        return u.includes(text.toLowerCase()) || u.includes(encodeURIComponent(text).toLowerCase());
       });
-      showResult(resultsEl, result.records);
       const note = document.createElement('p');
-      note.textContent = `${result.loaded}/${result.total} tiles loaded`;
-      resultsEl.prepend(note);
-    });
-  }
+      note.className = leaked ? 'query-error' : 'query-status';
+      note.textContent = leaked
+        ? `"${text}" appears in a request URL above. (Short text can match a URL by coincidence.)`
+        : `"${text}" appears in none of them. The matching happened here, in your browser.`;
+      parts.push(note);
+    }
 
-  // 0.02 degree square around the point, snapped like a search bbox
-  function setBboxAround(lat, lon) {
-    const d = 0.01;
-    document.getElementById('qd-bbox').value = AtgeoSearch.snapBbox([lon - d, lat - d, lon + d, lat + d]);
-  }
+    const summary = document.createElement('p');
+    const flags = [];
+    if (result.overview) flags.push('overview answer: only the most important places');
+    if (!result.complete) flags.push(`${result.tiles.failed} tiles failed`);
+    summary.textContent =
+      `${result.places.length} places from ${result.tiles.fetched} tiles` + (flags.length ? ` (${flags.join('; ')})` : '') + '. Top 5:';
+    parts.push(summary);
 
-  function init() {
-    const container = document.getElementById('query-demo');
-    if (!container) return;
+    parts.push(
+      jsonBlock(
+        result.places.slice(0, 5).map((hit) => ({
+          name: hit.place.name,
+          origin: hit.origin,
+          importance: hit.importance,
+          distance: Math.round(hit.distance),
+          score: hit.score === null ? null : Number(hit.score.toFixed(3)),
+        })),
+      ),
+    );
 
-    container.innerHTML = buildHTML();
+    resultsEl.replaceChildren(...parts);
+  });
+}
 
-    // Update URL preview on any input change
-    container.addEventListener('input', updateURLDisplay);
-    container.addEventListener('change', updateURLDisplay);
+function init() {
+  const container = $('query-demo');
+  if (!container) return;
 
-    // Geolocate button fills in the bbox field
-    document.getElementById('qd-locate').addEventListener('click', function () {
-      const btn = this;
-      if (btn.disabled) return;
-      btn.disabled = true;
+  container.innerHTML = buildHTML();
 
-      if (!navigator.geolocation) {
-        btn.disabled = false;
-        return;
-      }
+  container.addEventListener('input', updateForm);
+  container.addEventListener('change', updateForm);
 
-      navigator.geolocation.getCurrentPosition(
-        function (position) {
-          setBboxAround(position.coords.latitude, position.coords.longitude);
-          updateURLDisplay();
-          btn.disabled = false;
-        },
-        function () {
-          btn.disabled = false;
-        },
-        { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
-      );
-    });
-
-    // Run query on form submit
-    document.getElementById('query-demo-form').addEventListener('submit', function (e) {
+  $('query-demo-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    runRequest();
+  });
+  $('qd-search').addEventListener('click', runSearch);
+  $('qd-text').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
       e.preventDefault();
-      runQuery();
-    });
+      runSearch();
+    }
+  });
 
-    document.getElementById('qd-match').addEventListener('click', runMatch);
+  updateForm();
+}
 
-    // Listen for place-selected events from the map
-    document.addEventListener('place-selected', function (e) {
-      const record = e.detail;
-      if (!record) return;
-
-      // Extract coordinates from value.locations, same as map-demo.js
-      const locations = record?.value?.locations || [];
-      const geoLoc = locations.find(
-        l => l.$type && l.$type.toLowerCase().includes('geo')
-      );
-      if (geoLoc && geoLoc.latitude != null && geoLoc.longitude != null) {
-        setBboxAround(parseFloat(geoLoc.latitude), parseFloat(geoLoc.longitude));
-      }
-
-      updateURLDisplay();
-    });
-
-    // Initial URL preview
-    updateURLDisplay();
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-})();
+init();

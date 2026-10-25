@@ -73,6 +73,20 @@ test('placePoint ignores look-alike $types and unparseable coordinates', () => {
     null,
   );
   assert.equal(placePoint({}), null);
+  // An unusable point doesn't hide a usable one after it.
+  assert.deepEqual(
+    placePoint({
+      locations: [
+        { $type: 'community.lexicon.location.geo', latitude: '', longitude: '2' },
+        { $type: 'community.lexicon.location.geo', latitude: '1', longitude: '2' },
+      ],
+    }),
+    { lat: 1, lon: 2 },
+  );
+  assert.equal(
+    placePoint({ locations: [{ $type: 'community.lexicon.location.bbox', west: null, south: '1', east: '2', north: '3' }] }),
+    null,
+  );
   assert.equal(placePoint({ locations: 'nope' }), null);
 });
 
@@ -83,7 +97,7 @@ test('placePoint centres a bbox-only place on its overlap with the viewport', ()
   assert.ok(Math.abs(us.lon - -75.165) < 1e-9, `lon ${us.lon}`);
   assert.ok(Math.abs(us.lat - 39.95) < 1e-9, `lat ${us.lat}`);
 
-  // Philadelphia (-75.280266..-74.955831, 39.867005..40.137959) contains the whole view too.
+  // Philadelphia (-75.280266..-74.955831, 39.867005..40.137959) overlaps the view's east part.
   const phl = placePoint(named(divisions, 'Philadelphia'), [-75.3, 39.9, -75.2, 40.0]);
   assert.ok(Math.abs(phl.lon - (-75.280266 + -75.2) / 2) < 1e-9);
   assert.ok(Math.abs(phl.lat - 39.95) < 1e-9);
@@ -99,6 +113,10 @@ test('placePoint without a viewport uses the bbox centre', () => {
 test('placePoint returns null when a bbox misses the viewport', () => {
   const pa = named(divisions, 'Pennsylvania');
   assert.equal(placePoint(pa, [10, 10, 11, 11]), null);
+  // Longitude miss only: same latitudes, just east of Pennsylvania.
+  assert.equal(placePoint(pa, [-74.5, 40, -74.4, 40.1]), null);
+  // Latitude miss only: same longitudes, north of the US box.
+  assert.equal(placePoint(named(divisions, 'United States'), [-75.2, 75, -75.1, 76]), null);
 });
 
 test('placePoint handles antimeridian-crossing boxes', () => {
@@ -131,12 +149,17 @@ test('placePoint keeps world-spanning boxes inside a crossing viewport', () => {
   assert.ok(Math.abs(ru.lat - (41.18 + 70) / 2) < 1e-9, `lat ${ru.lat}`);
 });
 
+const near = (a, b) => a.length === b.length && a.every((x, i) => Math.abs(x - b[i]) < 1e-9);
+
 test('viewportBbox passes an ordinary view through', () => {
-  assert.deepEqual(viewportBbox(bounds(-75.2, 39.9, -75.1, 40)), [-75.2, 39.9, -75.1, 40]);
+  const v = viewportBbox(bounds(-75.2, 39.9, -75.1, 40));
+  assert.ok(near(v, [-75.2, 39.9, -75.1, 40]), String(v));
 });
 
 test('viewportBbox wraps unwrapped MapLibre longitudes', () => {
   // Panned one world west: same place, longitudes shifted by 360.
+  const far = viewportBbox(bounds(-795.2, 39.9, -795.1, 40));
+  assert.ok(Math.abs(far[0] - -75.2) < 1e-9 && Math.abs(far[2] - -75.1) < 1e-9, String(far));
   const v = viewportBbox(bounds(-435.2, 39.9, -435.1, 40));
   assert.ok(Math.abs(v[0] - -75.2) < 1e-9 && Math.abs(v[2] - -75.1) < 1e-9, String(v));
   // Straddling the antimeridian comes out west > east.
@@ -147,6 +170,9 @@ test('viewportBbox wraps unwrapped MapLibre longitudes', () => {
 
 test('viewportBbox covers the world when the view is wider than it', () => {
   assert.deepEqual(viewportBbox(bounds(-250, -95, 200, 95)), [-180, -90, 180, 90]);
+  // Latitude is clamped even when the longitudes fit.
+  const v = viewportBbox(bounds(-75.2, -91, -75.1, 91));
+  assert.ok(near(v, [-75.2, -90, -75.1, 90]), String(v));
 });
 
 test('placeCategory reads OSM tags in garganorn priority order', () => {
@@ -164,6 +190,26 @@ test('placeCategory reads OSM tags in garganorn priority order', () => {
   assert.equal(placeCategory(yes, yes.origin), 'Building');
 });
 
+// Priority order of garganorn/sql/_osm_category_case.sql.
+const OSM_KEYS = [
+  'amenity', 'shop', 'tourism', 'leisure', 'office', 'craft', 'healthcare', 'historic',
+  'natural', 'man_made', 'aeroway', 'railway', 'public_transport', 'place', 'boundary',
+  'waterway', 'power', 'landuse', 'highway', 'barrier', 'emergency', 'telecom', 'building',
+];
+
+test('placeCategory follows the whole OSM priority list', () => {
+  const origin = 'urn:atgeo:openstreetmap.org:node:1';
+  OSM_KEYS.forEach((key, i) => {
+    assert.equal(placeCategory({ attributes: { [key]: 'x_y' } }, origin), 'X Y', key);
+    if (i + 1 < OSM_KEYS.length) {
+      const attributes = { [OSM_KEYS[i + 1]]: 'loser', [key]: 'winner' };
+      assert.equal(placeCategory({ attributes }, origin), 'Winner', `${key} before ${OSM_KEYS[i + 1]}`);
+    }
+  });
+  // Tags outside the list don't count.
+  assert.equal(placeCategory({ attributes: { club: 'chess', name: 'x' } }, origin), null);
+});
+
 test('placeCategory reads Overture place and division vocabularies', () => {
   const museum = named(overture, 'Disney 100 Exhibition');
   assert.equal(placeCategory(museum, museum.origin), 'Museum');
@@ -177,7 +223,10 @@ test('placeCategory is null for unknown origins or missing attributes', () => {
   assert.equal(placeCategory({ attributes: { amenity: 'cafe' } }, 'at://did:plc:x/org.atgeo.place/1'), null);
   assert.equal(placeCategory({ attributes: { amenity: 'cafe' } }, null), null);
   assert.equal(placeCategory({}, 'urn:atgeo:openstreetmap.org:node:1'), null);
-  // "way" must not match a "wayside" collection
+  assert.equal(placeCategory({ attributes: {} }, 'urn:atgeo:overturemaps.org:place:x'), null);
+  assert.equal(placeCategory({ attributes: { categories: null } }, 'urn:atgeo:overturemaps.org:place:x'), null);
+  assert.equal(placeCategory({ attributes: {} }, 'urn:atgeo:overturemaps.org:division:x'), null);
+  // "division" must not match a "divisionx" collection
   assert.equal(placeCategory({ attributes: { subtype: 'x' } }, 'urn:atgeo:overturemaps.org:divisionx:1'), null);
 });
 

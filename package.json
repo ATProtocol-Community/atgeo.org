@@ -4,9 +4,10 @@
   "scripts": {
     "dev": "eleventy --serve",
     "build": "eleventy",
-    "test": "node --test test/"
+    "test": "node --test test/*.test.js"
   },
   "devDependencies": {
-    "@11ty/eleventy": "^3.0.0"
+    "@11ty/eleventy": "^3.0.0",
+    "@atgeo/client": "github:schuyler/atgeo-sdk-js#b958e7d3141f585f22d762389d724180b68f4c3b"
   }
 }

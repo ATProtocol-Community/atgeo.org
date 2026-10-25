@@ -9,13 +9,13 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="ATGeo" />
     <meta property="og:title" content="{% if title %}{{ title }} — ATGeo{% else %}ATGeo — Places for AT Protocol{% endif %}" />
-    <meta property="og:description" content="A Place lexicon for AT Protocol and a lookup service for geographic venues." />
+    <meta property="og:description" content="A Place lexicon for AT Protocol, a privacy-preserving gazetteer of geographic venues, and client SDKs to search it." />
     <meta property="og:image" content="https://atgeo.org/assets/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="{% if title %}{{ title }} — ATGeo{% else %}ATGeo — Places for AT Protocol{% endif %}" />
-    <meta name="twitter:description" content="A Place lexicon for AT Protocol and a lookup service for geographic venues." />
+    <meta name="twitter:description" content="A Place lexicon for AT Protocol, a privacy-preserving gazetteer of geographic venues, and client SDKs to search it." />
     <meta name="twitter:image" content="https://atgeo.org/assets/og-image.png" />
     <link rel="stylesheet" href="/css/style.css" />
   </head>
@@ -26,9 +26,16 @@
         { url: "/usage/",      label: "Usage" },
         { url: "/place/",      label: "Lexicon" },
         { url: "/api/",        label: "XRPC API" },
+        { url: "/sdk/",        label: "Client SDKs", children: [
+          { url: "/sdk/javascript/", label: "JavaScript" },
+          { url: "/sdk/swift/",      label: "Swift" },
+          { url: "/sdk/kotlin/",     label: "Kotlin" },
+          { url: "/sdk/python/",     label: "Python" },
+          { url: "/sdk/rust/",       label: "Rust" }
+        ] },
         { url: "/osm/",        label: "OpenStreetMap" },
-        { url: "/overture/",   label: "Overture Maps" },
-        { url: "/foursquare/", label: "Foursquare" },
+        { url: "/overture/",   label: "Overture Places" },
+        { url: "/divisions/",  label: "Overture Divisions" },
         { url: "/known-gaps/", label: "Roadmap" },
         { url: "/faq/",        label: "FAQ" },
         { url: "/help/",       label: "Help Wanted" }
@@ -43,6 +50,15 @@
           {% for item in navItems %}
           <li{% if page.url == item.url %} aria-current="page"{% endif %}>
             <a href="{{ item.url }}">{{ item.label }}</a>
+            {% if item.children %}
+            <ul class="sidebar-sub">
+              {% for child in item.children %}
+              <li{% if page.url == child.url %} aria-current="page"{% endif %}>
+                <a href="{{ child.url }}">{{ child.label }}</a>
+              </li>
+              {% endfor %}
+            </ul>
+            {% endif %}
           </li>
           {% endfor %}
         </ul>
@@ -51,16 +67,13 @@
         {{ content | safe }}
       </main>
     </div>
-    {% if page.url == "/" or page.url == "/api/" %}
-    <script src="/js/atgeo-search.js" defer></script>
-    {% endif %}
     {% if page.url == "/" %}
     <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
-    <script src="/js/map-demo.js" defer></script>
-    <script src="/js/place-display.js" defer></script>
+    <script type="module" src="/js/place-display.js"></script>
+    <script type="module" src="/js/map-demo.js"></script>
     {% endif %}
-    {% if page.url == "/" or page.url == "/api/" %}
-    <script src="/js/query-demo.js" defer></script>
+    {% if page.url == "/api/" %}
+    <script type="module" src="/js/query-demo.js"></script>
     {% endif %}
     <script src="/js/nav-toggle.js" defer></script>
   </body>

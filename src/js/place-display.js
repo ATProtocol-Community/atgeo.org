@@ -1,204 +1,142 @@
-// Place display implementation
+// Place display: the results list and the selected place's details, from SDK hits.
 
-(function () {
-  function highlightJson(json) {
-    const escaped = json
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+import { placeCategory, withinNames, upstreamLink, highlightJson, escapeHtml } from './places.js';
 
-    return escaped.replace(
-      /("(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?|true|false|null)/g,
-      function (match) {
-        if (/^"/.test(match)) {
-          if (/:$/.test(match)) {
-            return '<span class="json-key">' + match + '</span>';
-          }
-          return '<span class="json-string">' + match + '</span>';
-        }
-        if (/\b(true|false|null)\b/.test(match)) {
-          return '<span class="json-bool">' + match + '</span>';
-        }
-        return '<span class="json-number">' + match + '</span>';
-      }
-    );
-  }
+const placeName = (hit) => (typeof hit?.place?.name === 'string' && hit.place.name) || null;
 
-  function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
+let lastResults = [];
 
-  function getPlaceName(record) {
-    try {
-      return record?.value?.name || null;
-    } catch (_) {}
-    return null;
-  }
+function addRow(dl, label, valueNode) {
+  const dt = document.createElement('dt');
+  dt.textContent = label;
+  const dd = document.createElement('dd');
+  if (typeof valueNode === 'string') dd.textContent = valueNode;
+  else dd.appendChild(valueNode);
+  dl.append(dt, dd);
+}
 
-  function titleCase(str) {
-    return str.replace(/\b\w/g, c => c.toUpperCase());
-  }
+function renderPlace(hit) {
+  const container = document.getElementById('place-display');
+  if (!container) return;
 
-  function getPrimaryType(record) {
-    const collection = new URL(record.uri).pathname.split('/')[1];
-    const attrs = record?.value?.attributes;
-    if (!attrs) return null;
+  container.innerHTML = '';
 
-    if (collection === 'org.atgeo.places.foursquare') {
-      const labels = attrs.fsq_category_labels;
-      if (Array.isArray(labels) && labels.length > 0) {
-        const parts = labels[0].split('>');
-        return parts[parts.length - 1].trim();
-      }
-    }
-
-    if (collection === 'org.atgeo.places.overture.place') {
-      const primary = attrs.categories?.primary;
-      if (primary) {
-        return titleCase(primary.replace(/_/g, ' '));
-      }
-    }
-
-    if (collection === 'org.atgeo.places.osm') {
-      // Priority order matches garganorn/osm_filter.yaml
-      const osmKeys = [
-        'amenity', 'shop', 'tourism', 'leisure', 'healthcare', 'office',
-        'craft', 'club', 'emergency', 'diplomatic', 'historic', 'military',
-        'aeroway', 'railway', 'highway', 'waterway', 'natural', 'geological',
-        'man_made', 'building', 'boundary', 'landuse', 'place', 'power',
-      ];
-      for (const key of osmKeys) {
-        const val = attrs[key];
-        if (typeof val === 'string' && val !== 'yes') {
-          return titleCase(val.replace(/_/g, ' '));
-        }
-      }
-    }
-
-    return null;
-  }
-
-  let lastResults = [];
-
-  function renderRecord(data) {
-    const container = document.getElementById('place-display');
-    if (!container) return;
-
-    const name = getPlaceName(data) || 'Place';
-    const json = JSON.stringify(data.value || data, null, 2);
-
-    container.innerHTML = '';
-
-    if (lastResults.length > 0) {
-      const back = document.createElement('a');
-      back.className = 'place-display-back';
-      back.href = '#';
-      back.textContent = '\u2190 Back to results';
-      back.addEventListener('click', (e) => {
-        e.preventDefault();
-        renderResultsList(lastResults);
-        document.dispatchEvent(new CustomEvent('results-refocus'));
-      });
-      container.appendChild(back);
-    }
-
-    const heading = document.createElement('h3');
-    heading.className = 'place-display-name';
-    heading.textContent = name;
-    const type = getPrimaryType(data);
-    if (type) {
-      const typeSpan = document.createElement('span');
-      typeSpan.className = 'place-result-type';
-      typeSpan.textContent = type;
-      heading.appendChild(typeSpan);
-    }
-    container.appendChild(heading);
-
-    const pre = document.createElement('pre');
-    pre.className = 'place-display-json';
-    pre.innerHTML = '<code>' + highlightJson(json) + '</code>';
-    container.appendChild(pre);
-  }
-
-  function renderResultsList(records) {
-    const container = document.getElementById('place-display');
-    if (!container) return;
-
-    if (!records || records.length === 0) {
-      showInitialState();
-      return;
-    }
-
-    const ul = document.createElement('ul');
-    ul.className = 'place-results-list';
-
-    records.forEach((record, i) => {
-      const name = getPlaceName(record) || '(unnamed)';
-      const type = getPrimaryType(record);
-
-      const li = document.createElement('li');
-      li.dataset.recordIndex = String(i);
-      li.innerHTML =
-        '<span class="place-result-name">' + escapeHtml(name) + '</span>' +
-        (type ? '<span class="place-result-type">' + escapeHtml(type) + '</span>' : '');
-      li.addEventListener('click', () => {
-        document.dispatchEvent(
-          new CustomEvent('place-selected', { detail: record })
-        );
-      });
-      li.addEventListener('mouseenter', () => {
-        document.dispatchEvent(new CustomEvent('place-hover', { detail: { recordIndex: i } }));
-      });
-      li.addEventListener('mouseleave', () => {
-        document.dispatchEvent(new CustomEvent('place-unhover', { detail: { recordIndex: i } }));
-      });
-      ul.appendChild(li);
+  if (lastResults.length > 0) {
+    const back = document.createElement('a');
+    back.className = 'place-display-back';
+    back.href = '#';
+    back.textContent = '← Back to results';
+    back.addEventListener('click', (e) => {
+      e.preventDefault();
+      renderResultsList(lastResults);
+      document.dispatchEvent(new CustomEvent('results-refocus'));
     });
-
-    container.innerHTML = '';
-    container.appendChild(ul);
+    container.appendChild(back);
   }
 
-  function showInitialState() {
-    const container = document.getElementById('place-display');
-    if (!container) return;
-    container.innerHTML =
-      '<p class="place-display-hint">Select a place on the map to view its record.</p>';
+  const heading = document.createElement('h3');
+  heading.className = 'place-display-name';
+  heading.textContent = placeName(hit) || 'Place';
+  const type = placeCategory(hit.place, hit.origin);
+  if (type) {
+    const typeSpan = document.createElement('span');
+    typeSpan.className = 'place-result-type';
+    typeSpan.textContent = type;
+    heading.appendChild(typeSpan);
   }
+  container.appendChild(heading);
 
-  document.addEventListener('place-hover', function (event) {
-    const idx = event.detail.recordIndex;
-    const li = document.querySelector('.place-results-list li[data-record-index="' + idx + '"]');
-    if (li) li.classList.add('place-hover');
-  });
+  const dl = document.createElement('dl');
+  dl.className = 'place-display-facts';
+  const within = withinNames(hit.place);
+  if (within.length) addRow(dl, 'Within', within.join(' › '));
+  if (hit.origin) {
+    const code = document.createElement('code');
+    code.textContent = hit.origin;
+    addRow(dl, 'Origin', code);
+  }
+  if (hit.importance !== null && hit.importance !== undefined) addRow(dl, 'Importance', String(hit.importance));
+  const link = upstreamLink(hit.origin);
+  if (link) {
+    const a = document.createElement('a');
+    a.href = link;
+    a.rel = 'noopener';
+    a.textContent = 'View on OpenStreetMap';
+    addRow(dl, 'Source', a);
+  }
+  container.appendChild(dl);
 
-  document.addEventListener('place-unhover', function (event) {
-    const idx = event.detail.recordIndex;
-    const li = document.querySelector('.place-results-list li[data-record-index="' + idx + '"]');
-    if (li) li.classList.remove('place-hover');
-  });
+  const pre = document.createElement('pre');
+  pre.className = 'place-display-json';
+  pre.innerHTML = '<code>' + highlightJson(JSON.stringify(hit.place, null, 2)) + '</code>';
+  container.appendChild(pre);
+}
 
-  document.addEventListener('search-results', function (event) {
-    lastResults = event.detail || [];
-    renderResultsList(lastResults);
-  });
+function renderResultsList(hits) {
+  const container = document.getElementById('place-display');
+  if (!container) return;
 
-  document.addEventListener('place-selected', function (event) {
-    const detail = event.detail;
-    if (!detail) return;
-    renderRecord(detail);
-  });
-
-  document.addEventListener('DOMContentLoaded', showInitialState);
-
-  if (
-    document.readyState === 'interactive' ||
-    document.readyState === 'complete'
-  ) {
+  if (!hits || hits.length === 0) {
     showInitialState();
+    return;
   }
-})();
+
+  const ul = document.createElement('ul');
+  ul.className = 'place-results-list';
+
+  hits.forEach((hit, i) => {
+    const name = placeName(hit) || '(unnamed)';
+    const type = placeCategory(hit.place, hit.origin);
+
+    const li = document.createElement('li');
+    li.dataset.recordIndex = String(i);
+    li.innerHTML =
+      '<span class="place-result-name">' + escapeHtml(name) + '</span>' +
+      (type ? '<span class="place-result-type">' + escapeHtml(type) + '</span>' : '');
+    li.addEventListener('click', () => {
+      document.dispatchEvent(new CustomEvent('place-selected', { detail: { hit, index: i } }));
+    });
+    li.addEventListener('mouseenter', () => {
+      document.dispatchEvent(new CustomEvent('place-hover', { detail: { recordIndex: i } }));
+    });
+    li.addEventListener('mouseleave', () => {
+      document.dispatchEvent(new CustomEvent('place-unhover', { detail: { recordIndex: i } }));
+    });
+    ul.appendChild(li);
+  });
+
+  container.innerHTML = '';
+  container.appendChild(ul);
+}
+
+function showInitialState() {
+  const container = document.getElementById('place-display');
+  if (!container) return;
+  container.innerHTML =
+    '<p class="place-display-hint">Search, then pick a place on the map or in the list to see its record.</p>';
+}
+
+document.addEventListener('place-hover', function (event) {
+  const idx = event.detail.recordIndex;
+  const li = document.querySelector('.place-results-list li[data-record-index="' + idx + '"]');
+  if (li) li.classList.add('place-hover');
+});
+
+document.addEventListener('place-unhover', function (event) {
+  const idx = event.detail.recordIndex;
+  const li = document.querySelector('.place-results-list li[data-record-index="' + idx + '"]');
+  if (li) li.classList.remove('place-hover');
+});
+
+document.addEventListener('search-results', function (event) {
+  lastResults = event.detail || [];
+  renderResultsList(lastResults);
+});
+
+document.addEventListener('place-selected', function (event) {
+  const hit = event.detail?.hit;
+  if (hit) renderPlace(hit);
+});
+
+// Modules run after parsing, so the container already exists.
+showInitialState();
