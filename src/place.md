@@ -23,7 +23,7 @@ The schemas live in [`garganorn/lexicon/`](https://github.com/schuyler/garganorn
 
 ## Example
 
-A place from Overture, as served in a tile (the `sources` list is trimmed; everything else is as the server sent it):
+A place from Overture, as served in a tile (trimmed):
 
 ```json
 {
@@ -250,7 +250,7 @@ A tileset descriptor, as returned by `describeTileset`. A collection appears in 
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `slug` | string, required | The tileset's name, fixed when it's built: lowercase letters, digits and hyphens |
+| `slug` | string, required | The tileset's name, fixed when it's built; conventionally lowercase letters, digits and hyphens |
 | `collections` | array of `collectionInfo`, required | The collections whose records the tileset carries |
 | `publishedAt` | string (datetime) | When the tileset was created. Same as `publishedAt` in each of its tiles |
 | `extent` | `community.lexicon.location.bbox` | Bounding box of the tileset's records |

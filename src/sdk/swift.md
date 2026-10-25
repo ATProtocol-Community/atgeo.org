@@ -71,7 +71,7 @@ Every method is `async throws`. Cancel the calling `Task` to abort one.
 
 ### `searchPlaces(region:text:dataset:collection:sort:) -> SearchResult`
 
-Regions are `.circle(lat:lon:radius:)` (metres) or `.bbox(minLon:minLat:maxLon:maxLat:)` (degrees). `sort` is `.fused` (default), `.distance` or `.similarity`.
+Regions are `.circle(lat:lon:radius:)` (meters) or `.bbox(minLon:minLat:maxLon:maxLat:)` (degrees). `sort` is `.fused` (default), `.distance` or `.similarity`.
 
 `SearchResult` has `places`, `complete`, `overview`, `tiles` (`.fetched`, `.failed`) and `tileFailures`. Each `SearchHit` has `origin: String?`, `place: JSONObject`, `importance: Int64?`, `distance: Double` and `score: Double?`.
 

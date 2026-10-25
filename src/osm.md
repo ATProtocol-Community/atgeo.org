@@ -41,9 +41,11 @@ A `way` or `relation` is a polygon or a line in OSM. Here it's a point: the gaze
 - `opening_hours`, `phone`, `website`, `wikidata`, `wheelchair`, `internet_access`,
 - `addr:street`, `addr:housenumber`, `addr:city`, `addr:postcode`, `addr:country`.
 
-Everything else is dropped. Only named elements are imported, and a few catch-all values (`amenity=...` types that aren't places, `shop=yes`, `shop=vacant`, and the like) are skipped.
+Everything else is dropped.
 
-The [tileset descriptor](/api/) lists the tag keys a collection's records may carry.
+Which elements become places is an allowlist, and only named elements qualify. A few keys are open: any named `tourism`; `amenity` except street furniture and the like (`parking`, `bench`, `toilets`, `waste_basket`, `post_box`, …); `shop` except `yes` and `vacant`; and `office`, `craft` and `healthcare` except `yes`. Every other key admits only selected values: `leisure=park` or `stadium` but not `pitch`, `natural=peak` or `beach` but not `tree`, `railway=station`, `place=city` through `place=hamlet`, `highway=services` or `trailhead` but not `bus_stop`, and so on (ways and relations add some `building` values). The full lists are in garganorn's [`osm_import.sql`](https://github.com/schuyler/garganorn/blob/main/garganorn/sql/osm_import.sql).
+
+The [tileset descriptor](/api/#org-atgeo-describetileset) lists the tag keys a collection's records may carry.
 
 ### The primary category
 
@@ -55,7 +57,7 @@ That key and its value stay in `attributes`, and `describeTileset` reports categ
 
 ## Variants
 
-`variants` come from the name tags: `name:{lang}`, `alt_name`, `official_name`, `short_name`, `loc_name`, `old_name`. Each gets a `type` (`alternate`, `official`, `short`, `colloquial` or `historical`) and, when the tag's language code is valid, a `language`.
+`variants` come from the name tags: `name:{lang}`, `alt_name`, `official_name`, `short_name`, `loc_name`, `old_name`, `int_name`. Each gets a `type` (`alternate`, `official`, `short`, `colloquial` or `historical`) and, when the tag's language code is valid, a `language`.
 
 ## Containment
 

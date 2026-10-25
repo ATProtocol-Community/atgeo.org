@@ -19,7 +19,7 @@ If you're writing an app, you probably want an [SDK](/sdk/), which does everythi
 
 The server must never receive information precise enough to locate a person.
 
-Everything unusual about this API follows from that one rule. There is no server-side search, so search terms, which reveal intent, never leave your device. There is no way to list or enumerate places. The only spatial question you can ask is coarse: which tiles cover this region, at a precision floor of roughly a kilometre. The only other question names a place you already know the identity of. Neither shape lets a query describe a point, so no query can resolve to a device's position.
+Everything unusual about this API follows from that one rule. There is no server-side search, so search terms, which reveal intent, never leave your device. There is no way to list or enumerate places. The only spatial question you can ask is coarse: which tiles cover this region, at a precision floor of roughly a kilometer. The only other question names a place you already know the identity of. Neither shape lets a query describe a point, so no query can resolve to a device's position.
 
 The threat model and the reasoning are in [tile-privacy-design.md](https://github.com/schuyler/garganorn/blob/main/docs/tile-privacy-design.md).
 
@@ -133,7 +133,7 @@ GET /xrpc/org.atgeo.getPlace?uri=urn:atgeo:overturemaps.org:place:00458f1e-2120-
 }
 ```
 
-`record` is the place's `value`, unmodified: exactly what the tile holds. `importance` is beside it, as in a tile. `uri` is the plain-HTTP address of the same view, `{public_base}/{dataset}/{collection}/{id}`, which returns this same document. If more than one tileset carries the collection, the first one (in the deployment's configuration order) that holds the place answers.
+`record` is the place's `value`, unmodified: exactly what the tile holds. `importance` is beside it, as in a tile, and absent when the place has none. `uri` is the plain-HTTP address of the same view, `{public_base}/{dataset}/{collection}/{id}`, which returns this same document; `public_base` is the deployment's configured public URL, not whatever host the request arrived on. If more than one tileset carries the collection, the first one (in the deployment's configuration order) that holds the place answers.
 
 | Error | Description |
 |-------|-------------|
@@ -252,7 +252,7 @@ Read the flag; don't infer anything from the length of a quadkey in a URL. The b
 
 ## The precision floor
 
-Bounding-box coordinates carry at most two decimal places: a 0.01° grid, about 1.1 km at the equator. This is the safety principle made concrete. Without search terms, a box centred on a device's raw GPS fix would still locate the person to about ten metres however big the box is. Holding every coordinate to 0.01° limits what the server can extract to "which grid cell", not "which street corner".
+Bounding-box coordinates carry at most two decimal places: a 0.01° grid, about 1.1 km at the equator. This is the safety principle made concrete. Without search terms, a box centred on a device's raw GPS fix would still locate the person to about ten meters however big the box is. Holding every coordinate to 0.01° limits what the server can extract to "which grid cell", not "which street corner".
 
 The floor is enforced, not advised. The check is textual, on the string you sent: `37.770` fails on its trailing zero, and `1e2` is rejected outright. The server rejects rather than rounding, so a client that leaks precision hears about it:
 
@@ -277,7 +277,7 @@ A tile is a set of place records associated with one quadkey cell (Web-Mercator 
 
 **Tile URLs are opaque.** Never construct one; take whole URLs from `getTiles` and fetch them as given. A tile URL is immutable. When a new build is published, the URLs change completely, which costs you nothing, because you ask `getTiles` again instead of remembering URLs. Old builds are eventually retired, so a hoarded URL will in time return 404. That's the penalty for remembering.
 
-**Zoom and assignment.** The regular tiles exist at zooms 6 through 17. Each record goes in the coarsest tile holding no more than 1,000 records (a division goes by its interior point), falling back to zoom 17 when nothing coarser qualifies. Dense areas get small tiles and sparse areas get big ones. Tiles at different zooms coexist in one tileset, so assume no particular zoom. Divisions are polygons and are also referenced from every tile their geometry overlaps. Records within a tile are in no meaningful order.
+**Zoom and assignment.** The regular tiles exist at zooms 6 through 17. Each record goes in the coarsest tile holding no more than a per-build cap of records (1,000 by default) (a division goes by its interior point), falling back to zoom 17 when nothing coarser qualifies. Dense areas get small tiles and sparse areas get big ones. Tiles at different zooms coexist in one tileset, so assume no particular zoom. Divisions are polygons and are also referenced from every tile their geometry overlaps. Records within a tile are in no meaningful order.
 
 **Deduplicate by `origin`.** When you merge records from more than one tile, dedupe by `value.origin`, or by the record's `uri` for a record with no origin. Do this for every collection, unconditionally. A point record today lives in one regular tile plus possibly one overview tile, so duplicates are rare there; a division is referenced from every tile it overlaps, so there they're the norm. Every copy of a record is byte-identical, so it doesn't matter which one you keep.
 

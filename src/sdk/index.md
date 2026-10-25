@@ -65,12 +65,12 @@ There is no merged ranking across datasets. `importance` is only comparable with
 
 A region is required, and it's one of:
 
-- a **circle**: centre latitude and longitude, plus a radius in metres;
+- a **circle**: centre latitude and longitude, plus a radius in meters;
 - a **bounding box**: `[minLon, minLat, maxLon, maxLat]` in degrees.
 
 A box with `minLon > maxLon` crosses the antimeridian. The client sends two `getTiles` calls, one for each side, and merges the tiles. Invalid regions (non-finite or out-of-range coordinates, `minLat > maxLat`, a negative radius) are rejected before any request.
 
-Results are filtered back to *your* region, not the snapped one: a point place is kept if it's inside, a place with only a bounding box is kept if the box touches the region, and a circle means the circle, not its enclosing square. A tight region in a sparse area can come back empty even though the client holds good places a couple of kilometres off. That's a feature of predictability, but watch for it in testing.
+Results are filtered back to *your* region, not the snapped one: a point place is kept if it's inside, a place with only a bounding box is kept if the box touches the region, and a circle means the circle, not its enclosing square. A tight region in a sparse area can come back empty even though the client holds good places a couple of kilometers off. That's a feature of predictability, but watch for it in testing.
 
 You cannot search "Kyoto" without knowing roughly where Kyoto is. Tiles don't work like a geocoder.
 
@@ -96,16 +96,16 @@ Each hit in `places` carries:
 | `distance` | Metres from the region's centre to the nearest point of the place; 0 if the place contains the centre. |
 | `score` | Text similarity, 0 to 1; none if you gave no text. |
 
-The Swift, Kotlin, Python and Rust SDKs also give hits `name` and `location` helpers (Swift doesn't; it exposes `place` as a JSON tree).
+The Kotlin, Python and Rust SDKs also give hits `name` and `location` helpers; JavaScript and Swift expose `place` as served.
 
 ## Overview versus complete
 
 A search result has two flags that mean different things:
 
-- `overview` is `true` when the region was too big for the server's tile budget, and the server answered with its coarse overview tiles instead: only the most important places (the top 10,000 by importance per tileset). The results are a sample, not everything in the region. Show "zoom in for more".
+- `overview` is `true` when the region was too big for the server's tile budget, and the server answered with its coarse overview tiles instead: only the most important places (the top 10,000 by importance per tileset, plus every country, region and dependency for divisions). The results are a sample, not everything in the region. Show "zoom in for more".
 - `complete` is `false` when any tile failed to load. The results are partial.
 
-They're independent. `overview: true, complete: true` is a perfectly good answer. If you want the full set, search a smaller region. For a deeper look, see [the overview band](/api/) in the XRPC docs.
+They're independent. `overview: true, complete: true` is a perfectly good answer. If you want the full set, search a smaller region. For a deeper look, see [the overview band](/api/#the-overview-band) in the XRPC docs.
 
 ## Tile failures
 
@@ -127,7 +127,7 @@ There are no retries. A failed `getTiles` request is different: with no tile lis
 - `describeService` and `describeTileset`, only if you call them.
 - `getPlace` on a cache miss, sending the `origin` you asked for.
 
-Not on the wire: your search text, in any form, and your precise region or location. Those are used only on the device, for filtering, ranking and distance. The server does see your IP address and whatever headers your HTTP stack adds (the default transports keep these generic), and it can tell which tiles you've fetched. Snapping hides where in a ~1 km cell you are; it doesn't hide the cell. The SDKs send no telemetry.
+Not on the wire: your search text, in any form, and your precise region or location. Those are used only on the device, for filtering, ranking and distance. The server does see your IP address and whatever headers your HTTP stack adds (the Swift, Kotlin, Python and Rust default transports keep these generic; in a browser, the JavaScript client's requests carry the browser's own), and it can tell which tiles you've fetched. Snapping hides where in a ~1 km cell you are; it doesn't hide the cell. The SDKs send no telemetry.
 
 `getPlace` on a cache miss is a sharper signal than a tile fetch: it tells the server which place you're looking at. It's meant for resolving a shared link, and the cache is checked first so that tapping a search result doesn't hit the network.
 

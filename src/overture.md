@@ -41,7 +41,7 @@ One caveat: upstream ids are only as stable as the upstream makes them. Overture
 
 Numbers with fractions are strings because the AT Protocol data model has no floats (see the [FAQ](/faq/)). Integers like `version` stay integers.
 
-Each `sources` entry names the upstream `dataset` (live records show `meta`, `Microsoft`, `Foursquare`, `BrightQuery`, `AllThePlaces`, and Overture's own `Overture` and `Overture-signals`), the `record_id` in that dataset, the `property` it supplied, its `license`, `update_time`, `confidence`, and a few more provenance fields (`provider`, `resource`, `version`, `between`). Overture is a merge, and this is where it tells you what it merged. Foursquare is one of Overture's contributors; ATGeo itself no longer serves Foursquare directly.
+Each `sources` entry names the upstream `dataset` (live records show, among others, `meta`, `Microsoft`, `Foursquare`, `BrightQuery`, `AllThePlaces`, and Overture's own `Overture` and `Overture-signals`), the `record_id` in that dataset, the `property` it supplied, its `license`, `update_time`, `confidence`, and a few more provenance fields (`provider`, `resource`, `version`, `between`). Overture is a merge, and this is where it tells you what it merged. Foursquare is one of Overture's contributors; ATGeo itself no longer serves Foursquare directly.
 
 The `categories` values in the tileset descriptor are Overture's primary categories, such as `restaurant` or `beauty_salon`, with counts.
 

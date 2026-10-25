@@ -61,7 +61,7 @@ async fn main() -> Result<(), atgeo::Error> {
 }
 ```
 
-The example needs `tokio` (with `macros` and `rt`) in your own dependencies; the crate doesn't depend on Tokio, though its default transport needs a Tokio runtime. The blocking client is the same without `.await`:
+The example needs `tokio` (with `macros` and `rt`) in your own dependencies; the crate doesn't depend on Tokio, though its default transport needs a Tokio runtime. The blocking client, behind the `ureq` feature, is the same without `.await`:
 
 ```rust
 use atgeo::{Region, SearchOptions, blocking::AtgeoClient};
@@ -99,7 +99,7 @@ The async client's methods are `async`; the blocking client's are the same witho
 
 ### `search_places(region, options) -> SearchResult`
 
-Regions: `Region::circle(lat, lon, radius)` (metres), `Region::bbox(min_lon, min_lat, max_lon, max_lat)` (degrees). A `Region` isn't checked when built; `search_places` rejects an invalid one before any request.
+Regions: `Region::circle(lat, lon, radius)` (meters), `Region::bbox(min_lon, min_lat, max_lon, max_lat)` (degrees). A `Region` isn't checked when built; `search_places` rejects an invalid one before any request.
 
 `SearchOptions::new()` takes `.text(..)`, `.dataset(..)`, `.collection(..)` and `.sort(..)` (`SortMode::Fused`, `Distance` or `Similarity`).
 

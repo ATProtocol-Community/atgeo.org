@@ -71,7 +71,7 @@ Every call that touches the network takes an optional `signal` (`AbortSignal`).
 
 | Option | Meaning |
 |---|---|
-| `region` | Required. `{ lat, lon, radius }` (metres) or `{ bbox: [minLon, minLat, maxLon, maxLat] }`. |
+| `region` | Required. `{ lat, lon, radius }` (meters) or `{ bbox: [minLon, minLat, maxLon, maxLat] }`. |
 | `text` | Optional. Fuzzy-matched against `name` and `variants[].name`. |
 | `dataset` | Optional, e.g. `"openstreetmap.org"`. Defaults to `overturemaps.org`. |
 | `collection` | Optional, e.g. `"way"`. |

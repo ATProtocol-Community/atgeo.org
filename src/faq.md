@@ -26,7 +26,7 @@ Because the server would then learn what you're looking for, and where. Instead 
 
 ## Why won't the API take my exact coordinates?
 
-`getTiles` rejects any bounding box coordinate with more than two decimal places, with a `BboxTooPrecise` error. That's a 0.01&deg; grid, about 1.1 km at the equator. A box centered on a raw GPS fix would pinpoint a person to a few meters however big the box was, so the server only lets you say "which grid cell". The check is on the text you sent, so `37.770` fails on its trailing zero. Snap your region outward to the grid before sending; the client SDKs do this for you. See [the API](/api/).
+`getTiles` rejects any bounding box coordinate with more than two decimal places, with a `BboxTooPrecise` error. That's a 0.01&deg; grid, about 1.1 km at the equator. A box centered on a raw GPS fix would pinpoint a person to about ten meters however big the box was, so the server only lets you say "which grid cell". The check is on the text you sent, so `37.770` fails on its trailing zero. Snap your region outward to the grid before sending; the client SDKs do this for you. See [the API](/api/).
 
 ## Why do OSM ways show up as points?
 

@@ -42,7 +42,7 @@ import org.atgeo.client.Region
 val atgeo = AtgeoClient()
 
 val result = atgeo.searchPlaces(
-    region = Region.Circle(lat = 43.0, lon = -71.45, radius = 3000.0), // metres
+    region = Region.Circle(lat = 43.0, lon = -71.45, radius = 3000.0), // meters
     text = "pizza",
 )
 
@@ -59,7 +59,7 @@ for (hit in result.places) {
 ```kotlin
 val atgeo = AtgeoClient(
     server = "http://localhost:8000",
-    transport = OkHttpTransport(),
+    transport = myTransport,
     cacheBudgetBytes = 10L * 1024 * 1024,
     computeDispatcher = Dispatchers.Default,
 )
@@ -76,13 +76,13 @@ Make one client per server and share it; it's thread-safe, and the caches are wh
 
 ### Transports
 
-`HttpTransport` is one function, `suspend fun get(url: String): HttpResponse`, so a test or an app with its own HTTP stack can pass a lambda. The default, `HttpUrlConnectionTransport`, asks for gzip and refuses a body larger than `maxBodyBytes` once decoded (32 MiB by default) with an `IOException`, because the server chooses the tile URLs. On the JDK, a cancelled request keeps its socket reading until the body ends or the read timeout (30 s by default) fires; your coroutine is released at once either way. Whatever transport you use, don't give it a disk cache; the client promises to keep nothing on disk.
+`HttpTransport` is one function, `suspend fun get(url: String): HttpResponse`, so a test or an app with its own HTTP stack can pass a lambda. The default, `HttpUrlConnectionTransport`, asks for gzip and refuses a body larger than `maxBodyBytes` once decoded (32 MiB by default) with an `IOException`, because the server chooses the tile URLs. On the JDK, a cancelled request keeps its socket reading until the body ends or the read timeout (30 s by default) fires; your coroutine is released at once either way. For OkHttp, copy [`OkHttpTransport.kt`](https://github.com/schuyler/atgeo-sdk-kotlin/blob/main/android-sample/app/src/main/kotlin/org/atgeo/sample/OkHttpTransport.kt) from the sample app; it isn't part of the library. Whatever transport you use, don't give it a disk cache; the client promises to keep nothing on disk.
 
 ## The calls
 
 ### `searchPlaces(region, text?, dataset?, collection?, sort?): SearchResult`
 
-Regions are `Region.Circle(lat, lon, radius)` (metres) or `Region.Bbox(minLon, minLat, maxLon, maxLat)` (degrees). A circle is latitude first, a box longitude first, so name your arguments. `sort` is `SortMode.FUSED` (default), `DISTANCE` or `SIMILARITY`.
+Regions are `Region.Circle(lat, lon, radius)` (meters) or `Region.Bbox(minLon, minLat, maxLon, maxLat)` (degrees). A circle is latitude first, a box longitude first, so name your arguments. `sort` is `SortMode.FUSED` (default), `DISTANCE` or `SIMILARITY`.
 
 `SearchResult` has `places`, `complete`, `overview`, `tiles` and `tileFailures`. Each `SearchHit` has `origin: String?`, `place: JsonObject`, `importance: Long?`, `distance: Double` and `score: Double?`, plus two conveniences: `name` and `location` (a `point` and/or `bbox`, with coordinates already parsed from the strings they arrive as). For any other field, `place["field"].stringOrNull()` gives a string or `null`.
 

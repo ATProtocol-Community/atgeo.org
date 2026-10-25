@@ -36,7 +36,7 @@ Foursquare was dropped as a direct source. (Overture still contains Foursquare d
 
 **Who's on First** was planned as a source and isn't one.
 
-**Search ranking** is still tuned for venue lookup. Searching for localities is weaker, and famous places aren't always first.
+**Search ranking** is young. It happens in the SDKs now, with fuzzy matching weighed against importance and distance, and the weights are expected to change as people try it on real apps.
 
 **Address geocoding** is out of scope. Use something like Nominatim. The `community.lexicon.location.address` lexicon can carry an address in a `Place` record.
 
@@ -48,9 +48,9 @@ Foursquare was dropped as a direct source. (Overture still contains Foursquare d
 
 **Private places** raise questions about private data that the wider AT Protocol community is still working on. The `Place` lexicon lets you give a name with a coarse grid cell or no location at all. People who publish records like that will have to share physical locations out-of-band.
 
-**Data quality** varies by source. OpenStreetMap is comprehensive and kept up by a large army of volunteers, but the cadence of updates varies a lot. Overture is a merge of several datasets on a monthly schedule, and its quality is somewhere in between.
+**Data quality** varies by source. OpenStreetMap is comprehensive and kept up by a large army of volunteers, but the cadence of updates varies a lot. Overture is a merge of several datasets released monthly, and its quality varies with whichever contributor supplied a given place.
 
-**Place categories** are hard. "What kind of place is it?" reaches deep into how humans organize themselves, and different cultures think about places differently. Overture has about 2,000 categories, and OSM's tagging is more complex than that. Our answer for now is to punt: we pass through each source's own vocabulary and ask developers to lean into the details of the one they pick.
+**Place categories** are hard. "What kind of place is it?" reaches deep into how humans organize themselves, and different cultures think about places differently. Overture has about 2,000 categories (1,984 in the current build), and OSM's tagging is more complex than that. Our answer for now is to punt: we pass through each source's own vocabulary and ask developers to lean into the details of the one they pick.
 
 ## User safety
 
