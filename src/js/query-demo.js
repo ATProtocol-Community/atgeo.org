@@ -230,7 +230,7 @@ function init() {
   $('qd-text').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      runSearch();
+      if (!$('qd-search').disabled) runSearch();
     }
   });
 
