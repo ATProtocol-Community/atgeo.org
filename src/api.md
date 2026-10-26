@@ -162,7 +162,7 @@ No parameters. Any you send are ignored (a cache-buster, say). It returns the de
 ```json
 {
   "did": "did:web:places.atgeo.org",
-  "maxTiles": 50,
+  "maxTiles": 75,
   "tilesets": [
     { "slug": "overture-place", "collections": [{ "dataset": "overturemaps.org", "collection": "place" }] },
     { "slug": "overture-division", "collections": [{ "dataset": "overturemaps.org", "collection": "division" }] },
@@ -241,7 +241,7 @@ The descriptor for one tileset: what's in it, where, and under what terms.
 
 A tileset may carry a coarse band of tiles at zooms 1 through 5 alongside the regular ones. It holds the 10,000 records with the highest `importance`, ties broken by id. That's one cut, the same for every tileset: the division formula's [administrative floors](#importance) are what keep countries, dependencies and regions in it. A tileset's descriptor says whether it has a band, in `overview`.
 
-`getTiles` uses the band as a fallback. It answers from the regular tiles first. If that would cover more than the tile budget (`describeService`'s `maxTiles`, 50 here) and every selected tileset has an overview band, it returns the overview tiles that intersect the box instead, with no budget applied, and sets `"overview": true`. The result is deliberately a sample of the region, not everything in it. A live example, a ten-degree box over the northeast:
+`getTiles` uses the band as a fallback. It answers from the regular tiles first. If that would cover more than the tile budget (`describeService`'s `maxTiles`, 75 here) and every selected tileset has an overview band, it returns the overview tiles that intersect the box instead, with no budget applied, and sets `"overview": true`. The result is deliberately a sample of the region, not everything in it. A live example, a ten-degree box over the northeast:
 
 ```
 GET /xrpc/org.atgeo.getTiles?dataset=openstreetmap.org&bbox=-80,35,-70,45
