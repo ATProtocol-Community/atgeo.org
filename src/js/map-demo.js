@@ -54,7 +54,7 @@ if (container) {
   controls.appendChild(errorMsg);
   if (searchBar) searchBar.appendChild(controls);
 
-  // Philadelphia City Hall. The public data covers mostly the US east coast for now.
+  // Philadelphia City Hall, where the docs' examples come from.
   const map = new maplibregl.Map({
     container: container,
     style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json',

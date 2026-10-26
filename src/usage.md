@@ -9,7 +9,7 @@ title: "Usage"
 
 An ATGeo *Gazetteer* is an XRPC service that serves authoritative place data in ATGeo `Place` formatted JSON.
 
-The **places.atgeo.org** gazetteer lets you pull points of interest (PoIs) from OpenStreetMap and Overture Maps, along with the administrative areas that contain them. Coverage is mostly the US east coast for now.
+The **places.atgeo.org** gazetteer lets you pull points of interest (PoIs) from OpenStreetMap and Overture Maps, along with the administrative areas that contain them. Coverage is worldwide.
 
 The gazetteer is built using Free Software and Free Data. The public server is community supported, so please go easy on it, or consider [deploying your own](https://github.com/schuyler/garganorn/) if your app takes off.
 

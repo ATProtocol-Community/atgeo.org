@@ -164,4 +164,4 @@ A 2xx body with nothing usable in it raises a separate decoding error. Bad argum
 
 ## Where to go next
 
-Each SDK's README is its full reference; the language pages here are quickstarts. The design rationale lives in the garganorn repo's [client SDK doc](https://github.com/schuyler/garganorn/blob/main/docs/atgeo-client-sdk.md), and the exact behaviour in the [port contract](https://github.com/schuyler/atgeo-sdk-js/blob/main/docs/port-contract.md). Using the public server, mostly the US east coast for now? Be kind to it, or [run your own](https://github.com/schuyler/garganorn).
+Each SDK's README is its full reference; the language pages here are quickstarts. The design rationale lives in the garganorn repo's [client SDK doc](https://github.com/schuyler/garganorn/blob/main/docs/atgeo-client-sdk.md), and the exact behaviour in the [port contract](https://github.com/schuyler/atgeo-sdk-js/blob/main/docs/port-contract.md). Using the public server? Be kind to it, or [run your own](https://github.com/schuyler/garganorn).

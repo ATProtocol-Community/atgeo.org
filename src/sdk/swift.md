@@ -45,7 +45,7 @@ for hit in result.places {
 }
 ```
 
-Misspellings are fine. The public server has a limited dataset for now, mostly the US east coast, so a search elsewhere may come back empty. Check `result.complete` and `result.overview`; see [Client SDKs](/sdk/#overview-versus-complete).
+Misspellings are fine. Check `result.complete` and `result.overview`; see [Client SDKs](/sdk/#overview-versus-complete).
 
 ## Constructing a client
 

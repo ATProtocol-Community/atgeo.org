@@ -74,8 +74,6 @@ fn main() -> Result<(), atgeo::Error> {
 }
 ```
 
-The public server has a limited dataset for now, mostly the US east coast, so a search elsewhere may come back empty.
-
 ## Constructing a client
 
 ```rust

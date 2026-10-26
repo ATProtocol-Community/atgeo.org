@@ -9,6 +9,7 @@ What's shipped, and what's still open. The backend's [planned features](https://
 
 ## Shipped
 
+- **Worldwide coverage.** OpenStreetMap, Overture places and Overture divisions for the whole planet.
 - **[Client SDKs](/sdk/)** in JavaScript, Swift, Kotlin, Python and Rust. They're pre-release, installed from GitHub, but they exist.
 - **Fuzzy search, on the client.** The server has no text search and never sees what you typed. The SDK fetches the tiles for your region and matches and ranks them locally.
 - **Variants and multilingual names.** `variants` carry alternate, official, short, colloquial and historical names, with a language when known.
@@ -19,8 +20,6 @@ What's shipped, and what's still open. The backend's [planned features](https://
 Foursquare was dropped as a direct source. (Overture still contains Foursquare data, so it's not entirely gone.)
 
 ## Still open
-
-**Coverage** is mostly the US east coast for now. The global build is waiting on a rebuild. Until then, a search outside the covered area comes back thin or empty.
 
 **Concordance** (`sameAs`) would link records in different datasets that describe the same place and ease dataset lock-in. The lexicon has room for it; nothing produces it yet.
 
