@@ -54,12 +54,12 @@ if (container) {
   controls.appendChild(errorMsg);
   if (searchBar) searchBar.appendChild(controls);
 
-  // Philadelphia City Hall, where the docs' examples come from.
+  // San Francisco.
   const map = new maplibregl.Map({
     container: container,
     style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json',
-    center: [-75.1652, 39.9526],
-    zoom: 14.5,
+    center: [-122.4375, 37.7625],
+    zoom: 13.5,
   });
 
   let markers = [];
