@@ -53,8 +53,6 @@ A deployment may serve any subset; ask `describeService` which. A tileset can al
 
 A tile can hold records of a collection you didn't ask for (all three OSM element types share the OSM tiles, for one), so `getTiles` returns tiles, not records of one collection.
 
-The live data currently covers mostly the US east coast. The global build is pending a rebuild.
-
 ## Methods
 
 All four are `GET /xrpc/{nsid}`, all described by lexicons, and none needs authentication. Responses may include keys not documented here; ignore keys you don't recognize.
@@ -83,8 +81,8 @@ GET /xrpc/org.atgeo.getTiles?dataset=overturemaps.org&collection=place&bbox=-75.
 ```json
 {
   "tiles": [
-    "https://places.atgeo.org/tiles/overture-place/20261014T073433/032010/0320101032221211.json",
-    "https://places.atgeo.org/tiles/overture-place/20261014T073433/032010/03201010322212131.json",
+    "https://places.atgeo.org/tiles/overture-place/20261026T051931/032010/0320101032221211.json",
+    "https://places.atgeo.org/tiles/overture-place/20261026T051931/032010/03201010322212131.json",
     "..."
   ]
 }
@@ -193,8 +191,8 @@ The descriptor for one tileset: what's in it, where, and under what terms.
 ```json
 {
   "slug": "overture-place",
-  "publishedAt": "2026-10-14T07:34:33Z",
-  "extent": { "north": "52.482780", "south": "27.059126", "east": "-61.875000", "west": "-90.000000" },
+  "publishedAt": "2026-10-26T05:19:31Z",
+  "extent": { "north": "83.979259", "south": "-90.000000", "east": "180.000000", "west": "-180.000000" },
   "overview": { "records": 10000 },
   "collections": [
     {
@@ -208,9 +206,9 @@ The descriptor for one tileset: what's in it, where, and under what terms.
         "https://creativecommons.org/publicdomain/zero/1.0/legalcode"
       ],
       "attribution": "https://docs.overturemaps.org/attribution/",
-      "recordCount": 7695058,
+      "recordCount": 73631092,
       "locationFormats": ["community.lexicon.location.geo", "community.lexicon.location.address"],
-      "containmentTypes": ["country", "dependency", "region", "county", "locality", "macrohood", "neighborhood", "microhood"],
+      "containmentTypes": ["country", "dependency", "region", "county", "localadmin", "locality", "macrohood", "neighborhood", "microhood"],
       "categories": [
         { "value": "restaurant", "count": 1812921 },
         { "value": "professional_services", "count": 1267482 },
@@ -253,10 +251,8 @@ GET /xrpc/org.atgeo.getTiles?dataset=openstreetmap.org&bbox=-80,35,-70,45
 {
   "overview": true,
   "tiles": [
-    "https://places.atgeo.org/tiles/osm/20261014T075427/03022/03022.json",
-    "https://places.atgeo.org/tiles/osm/20261014T075427/03023/03023.json",
-    "https://places.atgeo.org/tiles/osm/20261014T075427/03200/03200.json",
-    "https://places.atgeo.org/tiles/osm/20261014T075427/03201/03201.json"
+    "https://places.atgeo.org/tiles/osm/20261026T074223/030/030.json",
+    "https://places.atgeo.org/tiles/osm/20261026T074223/0320/0320.json"
   ]
 }
 ```
@@ -315,7 +311,7 @@ Each record has up to three keys: `value`, the place (an [`org.atgeo.place`](/pl
 
 ```json
 {
-  "publishedAt": "2026-10-14T07:34:33Z",
+  "publishedAt": "2026-10-26T05:19:31Z",
   "attribution": [
     {
       "dataset": "overturemaps.org",

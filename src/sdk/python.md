@@ -53,7 +53,7 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-Misspellings are fine. The public server has a limited dataset for now, mostly the US east coast, so a search elsewhere may come back empty. Check `result.complete` and `result.overview`; if tiles failed, `result.tile_failures` says which and why.
+Misspellings are fine. Check `result.complete` and `result.overview`; if tiles failed, `result.tile_failures` says which and why.
 
 ## Constructing a client
 

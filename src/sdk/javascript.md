@@ -39,7 +39,7 @@ for (const { origin, place, distance, score } of places) {
 }
 ```
 
-Misspellings are fine. The public server has a limited dataset for now, mostly the US east coast, so a search elsewhere may come back empty.
+Misspellings are fine.
 
 ## Constructing a client
 

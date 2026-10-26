@@ -54,12 +54,12 @@ if (container) {
   controls.appendChild(errorMsg);
   if (searchBar) searchBar.appendChild(controls);
 
-  // Philadelphia City Hall. The public data covers mostly the US east coast for now.
+  // San Francisco.
   const map = new maplibregl.Map({
     container: container,
     style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json',
-    center: [-75.1652, 39.9526],
-    zoom: 14.5,
+    center: [-122.4375, 37.7625],
+    zoom: 13.5,
   });
 
   let markers = [];
