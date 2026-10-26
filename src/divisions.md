@@ -63,7 +63,7 @@ The numbers aren't emitted; they're just the sort order, spaced out so there's r
 
 ## The overview band
 
-When a request covers too much ground for ordinary tiles, the server answers with a coarse sample instead (see the [API](/api/)). For divisions that sample holds the most important ones, and also every `country`, `region` and `dependency`, because an importance cut alone would be all cities.
+When a request covers too much ground for ordinary tiles, the server answers with a coarse sample instead (see the [API](/api/)). For divisions that sample holds the most important ones. Countries, dependencies and regions score above every other subtype, so they're the ones it keeps.
 
 ## Example
 
