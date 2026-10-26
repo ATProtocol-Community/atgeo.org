@@ -138,9 +138,10 @@ if (container) {
 
     const hits = result.places.slice(0, RESULT_LIMIT);
     const notes = [];
-    if (result.overview) notes.push('Showing only the most important places here; zoom in for more');
+    // An overview answer is a sample, so an empty one means "zoom in", not "nothing here".
+    if (result.overview) notes.push(hits.length ? 'Showing only the most important places here; zoom in for more' : 'Zoom in to search here');
     if (!result.complete) notes.push(`${result.tiles.failed} of ${result.tiles.fetched + result.tiles.failed} tiles failed to load`);
-    if (hits.length === 0) notes.push('No places found here');
+    if (hits.length === 0 && !result.overview) notes.push('No places found here');
     if (notes.length) showNote(notes.join('. '));
 
     hits.forEach((hit, i) => {
