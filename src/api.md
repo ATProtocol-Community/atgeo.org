@@ -431,7 +431,7 @@ The DID document's `id` is the same `did:web` as `describeService`'s `did`. It a
 | `MethodNotAllowed` | 405 | An HTTP method the route doesn't take, with an `Allow` header |
 | `MethodNotImplemented` | 501 | The NSID isn't one of the four methods the server implements, which includes every `com.atproto.*` method and a record lexicon such as `org.atgeo.place` |
 
-**On the plain routes, a miss is HTTP 404** with a JSON body, never an HTML page (the spec's rule; see the note under [Headers](#headers-caching-and-cors) on where the live server still lags):
+**On the plain routes, a miss is HTTP 404** with a JSON body, never an HTML page:
 
 | Route | Miss | Error |
 |-------|------|-------|
@@ -459,7 +459,7 @@ The status differs from XRPC on purpose: XRPC follows the AT Protocol's 400-for-
 
 Tile URLs are immutable, so tiles get a week. `getTiles` and `describeService` change when a new build lands, so they get an hour, and a client learns of a new build within an hour of asking.
 
-Every response, errors and tiles included, carries `Access-Control-Allow-Origin: *`, so browser pages on any origin can read it. Every response also carries `X-Content-Type-Options: nosniff`, since error messages can echo the request path and a browser shouldn't be allowed to guess that one is HTML. (The live server is a little behind the spec on that last one, and a plain-HTTP 404 may still be an HTML page.)
+Every response, errors and tiles included, carries `Access-Control-Allow-Origin: *`, so browser pages on any origin can read it. Every response also carries `X-Content-Type-Options: nosniff`, since error messages can echo the request path and a browser shouldn't be allowed to guess that one is HTML.
 
 ## Licensing
 

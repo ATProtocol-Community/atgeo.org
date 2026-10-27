@@ -5,7 +5,7 @@ title: "Overture Places"
 
 # Overture Places
 
-The [Overture Maps](https://overturemaps.org/) places theme is a monthly-published merge of several upstream datasets into businesses, landmarks and other points of interest (tens of millions worldwide; the live build has about 7.7 million so far, because it only covers the eastern part of North America). places.atgeo.org serves it as a collection.
+The [Overture Maps](https://overturemaps.org/) places theme is a monthly-published merge of several upstream datasets into businesses, landmarks and other points of interest (about 74 million worldwide in the live build). places.atgeo.org serves it as a collection.
 
 | | |
 |---|---|
