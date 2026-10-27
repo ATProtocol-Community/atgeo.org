@@ -252,10 +252,11 @@ th {
   animation: spin 0.6s linear infinite;
 }
 
+/* A shown error or note takes a row of its own rather than squeezing the input. */
 .map-search-error {
+  flex-basis: 100%;
   color: #dc2626;
   font-size: 0.8rem;
-  margin-left: 0.5rem;
 }
 
 /* ===== Place Display Widget ===== */
@@ -837,6 +838,16 @@ main :not(pre) > code {
   .query-form-fields input,
   .query-form-fields select {
     width: 100%;
+  }
+
+  /* The search input gets its own row; the dataset menu and buttons share the next. */
+  #map-search .map-search input[type="text"] {
+    flex-basis: 100%;
+  }
+
+  #map-search .map-search select {
+    flex: 1;
+    min-width: 0;
   }
 
   #qd-latitude,
