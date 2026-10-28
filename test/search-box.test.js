@@ -63,6 +63,17 @@ test('centralBoxes drops a box that repeats an earlier one, not only the view', 
   ]);
 });
 
+test('centralBoxes makes four boxes by default', () => {
+  // A view big enough that no halving repeats: the default is four, not more.
+  assert.equal(centralBoxes([0, 0, 1, 1]).length, 4);
+});
+
+test('findSearchableBox probes the view and four boxes by default', async () => {
+  const { probe, asked } = fakeProbe(() => false);
+  await findSearchableBox([0, 0, 1, 1], probe);
+  assert.equal(asked.length, 5);
+});
+
 test('centralBoxes takes a step count', () => {
   assert.ok(centralBoxes([0, 0, 1, 1], 2).length <= 2);
   assert.deepEqual(centralBoxes([0, 0, 1, 1], 2), [[0.25, 0.25, 0.75, 0.75], [0.37, 0.37, 0.63, 0.63]]);
