@@ -42,6 +42,105 @@ export function viewportBbox(bounds) {
   return [wrapLon(w), s, wrapLon(e), n];
 }
 
+// Grid snapping as the SDK does it (0.01°, outward, never empty), so a box this returns is one the
+// SDK sends on unchanged. Values within EPSILON of a grid line count as on it.
+const EPSILON = 1e-9;
+const snapDown = (x) => {
+  const r = Math.round(x * 100);
+  return Math.abs(x * 100 - r) < EPSILON ? r : Math.floor(x * 100);
+};
+const snapUp = (x) => {
+  const r = Math.round(x * 100);
+  return Math.abs(x * 100 - r) < EPSILON ? r : Math.ceil(x * 100);
+};
+
+function snapSpan(min, max, limit) {
+  let lo = Math.max(snapDown(min), -limit * 100);
+  let hi = Math.min(snapUp(max), limit * 100);
+  if (lo === hi) {
+    if (hi < limit * 100) hi++;
+    else lo--;
+  }
+  return [lo / 100, hi / 100];
+}
+
+// [west, south, east, north] snapped outward to the 0.01° grid. Not for a box across the antimeridian.
+export function snapBox([w, s, e, n]) {
+  const [west, east] = snapSpan(w, e, 180);
+  const [south, north] = snapSpan(s, n, 90);
+  return [west, south, east, north];
+}
+
+// The bbox parameter getTiles takes.
+export function bboxParam(box) {
+  return box.map((v) => v.toFixed(2)).join(',');
+}
+
+const sameBox = (a, b) => a.every((v, i) => v === b[i]);
+
+// Boxes around the viewport's centre, each half the span of the last, snapped to the grid: the
+// smaller regions to try when the view is over the tile budget. Repeats that snapping produces at
+// small spans are dropped, so each is a different, smaller region. None for a view across the
+// antimeridian.
+export function centralBoxes(viewport, steps = 4) {
+  const [w, s, e, n] = viewport;
+  if (w > e) return [];
+  const cx = (w + e) / 2;
+  const cy = (s + n) / 2;
+  const seen = [snapBox(viewport)];
+  const boxes = [];
+  for (let k = 1; k <= steps; k++) {
+    const hw = (e - w) / 2 ** (k + 1);
+    const hh = (n - s) / 2 ** (k + 1);
+    const box = snapBox([cx - hw, cy - hh, cx + hw, cy + hh]);
+    if (seen.some((b) => sameBox(b, box))) continue;
+    seen.push(box);
+    boxes.push(box);
+  }
+  return boxes;
+}
+
+// Whether a getTiles answer is regular tiles (true) or over the budget (false: the overview band,
+// or BboxTooLarge). Anything else isn't an answer to judge by, and throws.
+export function fitsBudget(status, body) {
+  if (status === 400 && body?.error === 'BboxTooLarge') return false;
+  if (status < 200 || status > 299 || !body || typeof body !== 'object' || !Array.isArray(body.tiles)) {
+    throw new Error(`unusable getTiles answer (HTTP ${status})`);
+  }
+  return !body.overview;
+}
+
+// The region to search for a viewport: { box: null } to search the view itself, or { box } for the
+// first central box whose regular tiles fit the budget. probe(bboxParam) resolves true when they fit.
+// A view that fits, a view across the antimeridian, no box that fits, a failed probe, or a search
+// superseded mid-way (isCurrent() false) all give { box: null }: search the view, as before.
+export async function findSearchableBox(viewport, probe, { steps = 4, isCurrent = () => true } = {}) {
+  if (viewport[0] > viewport[2]) return { box: null };
+  const boxes = centralBoxes(viewport, steps);
+  try {
+    if (await probe(bboxParam(snapBox(viewport)))) return { box: null };
+    for (const box of boxes) {
+      if (!isCurrent()) return { box: null };
+      if (await probe(bboxParam(box))) return { box };
+    }
+  } catch {
+    // A probe that can't answer never holds up the search.
+  }
+  return { box: null };
+}
+
+// "~N km": the box's longer side, for telling people how much ground a search covered.
+export function boxLabel([w, s, e, n]) {
+  const midLat = ((s + n) / 2) * (Math.PI / 180);
+  const km = Math.max((e - w) * 111.32 * Math.cos(midLat), (n - s) * 110.57);
+  return `~${km >= 1 ? Math.round(km) : km.toFixed(1)} km`;
+}
+
+// The note for a search that covered a central box in place of the whole view.
+export function boxNote(box) {
+  return `Searched the central ${boxLabel(box)}; zoom in or pan to search elsewhere`;
+}
+
 // A {lat, lon} to put a marker at, or null.
 //
 // A geo point is used as is. A place with only a bbox (a division, say) gets the centre of
