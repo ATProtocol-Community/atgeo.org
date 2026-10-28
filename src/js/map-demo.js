@@ -1,13 +1,16 @@
 // Map demo: searches the gazetteer through @atgeo/client, entirely in the browser.
 
-import { createClient, AtgeoError } from './client.js';
-import { DATASETS, searchOptions, placePoint, viewportBbox } from './places.js';
+import { createClient, AtgeoError, SERVER } from './client.js';
+import {
+  DATASETS, searchOptions, placePoint, viewportBbox, xrpcURL, fitsBudget, findSearchableBox, boxNote,
+} from './places.js';
 
 const container = document.getElementById('map-demo');
 
 if (container) {
   const atgeo = createClient();
   const RESULT_LIMIT = 12;
+  const PROBE_TIMEOUT_MS = 5000;
 
   // Build search controls into the separate search bar
   const searchBar = document.getElementById('map-search');
@@ -66,6 +69,47 @@ if (container) {
   let geolocating = false;
   let searchSeq = 0;
 
+  // The outline of a box searched in place of an over-budget view. A box set before the style
+  // has loaded is drawn once it has.
+  let searchBox = null;
+  function boxFeature(box) {
+    if (!box) return { type: 'FeatureCollection', features: [] };
+    const [w, s, e, n] = box;
+    return {
+      type: 'Feature',
+      properties: {},
+      geometry: { type: 'Polygon', coordinates: [[[w, s], [e, s], [e, n], [w, n], [w, s]]] },
+    };
+  }
+  function showSearchBox(box) {
+    searchBox = box;
+    const source = map.getSource('search-box');
+    if (source) source.setData(boxFeature(box));
+  }
+  map.on('load', () => {
+    map.addSource('search-box', { type: 'geojson', data: boxFeature(searchBox) });
+    map.addLayer({
+      id: 'search-box',
+      type: 'line',
+      source: 'search-box',
+      paint: { 'line-color': '#2563eb', 'line-width': 2, 'line-dasharray': [2, 2] },
+    });
+  });
+
+  // Whether the view's regular tiles fit the server's budget, asked of getTiles directly: the SDK
+  // doesn't expose it, and it decides which one region the search covers.
+  async function fitsTileBudget(options, bbox) {
+    const url = xrpcURL(SERVER, 'org.atgeo.getTiles', { ...options, bbox });
+    const response = await fetch(url, { signal: AbortSignal.timeout(PROBE_TIMEOUT_MS) });
+    let body = null;
+    try {
+      body = await response.json();
+    } catch {
+      // fitsBudget throws on the missing body.
+    }
+    return fitsBudget(response.status, body);
+  }
+
   function clearMarkers() {
     markers.forEach((m) => m.marker.remove());
     markers = [];
@@ -103,22 +147,33 @@ if (container) {
 
   async function doSearch() {
     const text = queryInput.value.trim();
+    const options = searchOptions(datasetSelect.value);
     const seq = ++searchSeq;
 
     clearError();
     clearMarkers();
+    showSearchBox(null);
     searchBtn.disabled = true;
     searchBtn.classList.add('loading');
     document.dispatchEvent(new CustomEvent('search-results', { detail: [] }));
 
     const viewport = viewportBbox(map.getBounds());
+    let region = viewport;
+    let box = null;
     let result;
     try {
+      // Over the tile budget, the view gets a sample; a smaller box around its centre may get
+      // everything instead. This picks one region to search, never several.
+      ({ box } = await findSearchableBox(viewport, (bbox) => fitsTileBudget(options, bbox), {
+        isCurrent: () => seq === searchSeq,
+      }));
+      if (seq !== searchSeq) return;
+      if (box) region = box;
       // searchPlaces throws synchronously for a bad region; await inside try catches both.
       result = await atgeo.searchPlaces({
-        region: { bbox: viewport },
+        region: { bbox: region },
         text: text || undefined,
-        ...searchOptions(datasetSelect.value),
+        ...options,
       });
     } catch (err) {
       if (seq !== searchSeq) return;
@@ -138,6 +193,10 @@ if (container) {
 
     const hits = result.places.slice(0, RESULT_LIMIT);
     const notes = [];
+    if (box) {
+      showSearchBox(box);
+      notes.push(boxNote(box));
+    }
     // An overview answer is a sample, so an empty one means "zoom in", not "nothing here".
     if (result.overview) notes.push(hits.length ? 'Showing only the most important places here; zoom in for more' : 'Zoom in to search here');
     if (!result.complete) notes.push(`${result.tiles.failed} of ${result.tiles.fetched + result.tiles.failed} tiles failed to load`);
@@ -145,7 +204,7 @@ if (container) {
     if (notes.length) showNote(notes.join('. '));
 
     hits.forEach((hit, i) => {
-      const point = placePoint(hit.place, viewport);
+      const point = placePoint(hit.place, region);
       if (!point) return;
 
       const name = typeof hit.place.name === 'string' ? hit.place.name : '(unnamed)';
