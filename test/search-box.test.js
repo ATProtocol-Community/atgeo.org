@@ -164,6 +164,8 @@ test('boxLabel gives the longer side in kilometres', () => {
   assert.equal(boxLabel([0, 0, 0.02, 0.1]), '~11 km');
   // Longitude shrinks with latitude: 0.1° at 60°N is 5.6 km.
   assert.equal(boxLabel([0, 60, 0.1, 60.02]), '~6 km');
+  // Measured at the box's middle latitude (50°), not its south or north edge.
+  assert.equal(boxLabel([0, 40, 40, 60]), '~2862 km');
 });
 
 test('boxNote says how much ground the search covered and what to do about the rest', () => {
