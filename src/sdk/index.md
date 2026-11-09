@@ -115,7 +115,7 @@ A keyword hit has no `distance` or `score`: the server ranks by neither, and you
 
 ## Attribution
 
-Every search result carries an `attribution` list: the credit owed for the data the search used, one entry per `(dataset, collection)`, sorted, with its licences and the credit line to show. If you show a place, show the credit its data requires. It covers every tile the search used, not just the places that survived filtering, and includes the divisions a place's `within` names. `getPlace` returns the place's own `attribution` list too.
+Every search result carries an `attribution` list: the credit owed for the data the search used, one entry per `(dataset, collection)`, sorted, with its licences and the URL of the upstream's attribution or copyright page. If you show a place, show the credit its data requires. It covers every tile the search used, not just the places that survived filtering, and includes the divisions a place's `within` names. `getPlace` returns the place's own `attribution` list too.
 
 ## Disclosure
 

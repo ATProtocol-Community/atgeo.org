@@ -41,21 +41,26 @@ Rust 1.85 or later (edition 2024). Through reqwest, a current lockfile can pick 
 ## Synopsis
 
 ```rust
-use atgeo::{AtgeoClient, Region, SearchOptions};
+use atgeo::{AtgeoClient, NearbyOptions, Region};
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), atgeo::Error> {
     let atgeo = AtgeoClient::new();
 
     let result = atgeo
-        .search_places(
+        .search_nearby(
             Region::circle(39.9526, -75.1652, 1000.0), // radius in meters
-            SearchOptions::new().text("Starbux"),
+            NearbyOptions::new("overturemaps.org").text("Starbux"),
         )
         .await?;
 
     for hit in &result.places {
         println!("{} {:.0} {:?} {:?}", hit.name().unwrap_or("-"), hit.distance, hit.score, hit.origin);
+    }
+
+    // show this wherever you show the places
+    for a in &result.attribution {
+        println!("{}", a.attribution.clone().unwrap_or(format!("{}/{}", a.dataset, a.collection)));
     }
     Ok(())
 }
@@ -64,15 +69,26 @@ async fn main() -> Result<(), atgeo::Error> {
 The example needs `tokio` (with `macros` and `rt`) in your own dependencies; the crate doesn't depend on Tokio, though its default transport needs a Tokio runtime. The blocking client, behind the `ureq` feature, is the same without `.await`:
 
 ```rust
-use atgeo::{Region, SearchOptions, blocking::AtgeoClient};
+use atgeo::{NearbyOptions, Region, blocking::AtgeoClient};
 
 fn main() -> Result<(), atgeo::Error> {
     let atgeo = AtgeoClient::new();
-    let result = atgeo.search_places(Region::circle(39.9526, -75.1652, 1000.0), SearchOptions::new().text("Starbux"))?;
+    let result = atgeo.search_nearby(Region::circle(39.9526, -75.1652, 1000.0), NearbyOptions::new("overturemaps.org").text("Starbux"))?;
     println!("{} places", result.places.len());
     Ok(())
 }
 ```
+
+Misspellings are fine. `search_nearby` never sends your text to the server. For a place that isn't nearby, `search_by_keyword` does, and says so in its name:
+
+```rust
+use atgeo::KeywordOptions;
+
+let found = atgeo.search_by_keyword("Liberty Bell", KeywordOptions::new("overturemaps.org")).await?;
+println!("{:?}", found.disclosed); // Disclosure { keyword: true, region: None }
+```
+
+Check `result.complete` and `result.overview` too; see [Client SDKs](/sdk/#overview-versus-complete).
 
 ## Constructing a client
 
@@ -84,7 +100,6 @@ let atgeo = AtgeoClient::with_transport(ReqwestTransport::new())
 
 | Builder method | Default | Meaning |
 |---|---|---|
-| `with_transport(t)` | `ReqwestTransport::new()` | Constructor taking your transport. |
 | `.server(url)` | `https://places.atgeo.org` | Base URL. |
 | `.cache_budget_bytes(n)` | 50 MiB | Cap on the in-memory tile cache. |
 | `.clock(...)` | the wall clock | What the caches expire by; for tests. |
@@ -95,21 +110,66 @@ A client is `Send + Sync` whenever its transport is. Make one and share it, by r
 
 The async client's methods are `async`; the blocking client's are the same without it. All return `Result<_, atgeo::Error>`.
 
-### `search_places(region, options) -> SearchResult`
+### `search_nearby(region, options) -> NearbySearchResult`
 
-Regions: `Region::circle(lat, lon, radius)` (meters), `Region::bbox(min_lon, min_lat, max_lon, max_lat)` (degrees). A `Region` isn't checked when built; `search_places` rejects an invalid one before any request.
+Regions: `Region::circle(lat, lon, radius)` (meters), `Region::bbox(west, south, east, north)` (degrees). A `Region` isn't checked when built; `search_nearby` rejects an invalid one before any request.
 
-`SearchOptions::new()` takes `.text(..)`, `.dataset(..)`, `.collection(..)` and `.sort(..)` (`SortMode::Fused`, `Distance` or `Similarity`).
+`NearbyOptions::new(dataset)` takes the required dataset (e.g. `"openstreetmap.org"`; no default) and these setters:
 
-`SearchResult` has `places`, `complete`, `overview`, `tiles` and `tile_failures`. Each `SearchHit` has `origin: Option<String>`, `place: Place`, `importance: Option<i64>`, `distance: f64`, `score: Option<f64>`, plus `name()` and `location()`. `Place` is `Arc<serde_json::Map<String, serde_json::Value>>`: shared, not copied, so `(*hit.place).clone()` gives you one of your own. The result types are `#[non_exhaustive]`; you can't build one with a struct literal.
+| Setter | Meaning |
+|---|---|
+| `.text(..)` | Optional. Matched against `name` and `variants[].name`, on the device. |
+| `.collection(..)` | Optional, e.g. `"way"`. |
+| `.sort(..)` | `SortMode::Fused` (default), `Distance` or `Similarity` (needs text). |
+
+`NearbySearchResult` has `places`, `complete`, `overview`, `tiles`, `tile_failures`, `attribution` and `disclosed`. Each `NearbyHit` has `origin: Option<String>`, `collection: Option<CollectionKey>`, `place: Place`, `importance: Option<i64>`, `distance: f64` and `score: Option<f64>`, plus `name()`, `location()` and `via()` (`"tiles"`). `disclosed.keyword` is always `false` here. `Place` is `Arc<serde_json::Map<String, serde_json::Value>>`: shared, not copied, so `(*hit.place).clone()` gives you one of your own. The result types are `#[non_exhaustive]`; you can't build one with a struct literal.
+
+### `search_by_keyword(keyword, options) -> KeywordSearchResult`
+
+`KeywordOptions::new(dataset)` takes an optional `.collection(..)` and an optional `.region(KeywordRegion::new(west, south, east, north))`. The keyword is **sent to the server**, exactly as given. A region is a box only, never a circle, and goes out snapped outward to whole degrees.
+
+The result is `places`, `attribution` and `disclosed`, in the server's order (most important first, at most 20). Each `KeywordHit` has `origin`, `collection`, `place` and `importance`, plus `name()`, `location()` and `via()` (`"keyword"`): no `distance` and no `score`. It isn't cached. A keyword with no word of two or more characters is sent anyway, and comes back as `Error::Atgeo` with code `KeywordRequired`.
+
+### `search_nearby_then_by_keyword(region, options) -> FallbackSearchResult`
+
+`FallbackOptions::new(dataset, keyword, keyword_region)` takes the keyword and a required `KeywordRegionMode`: `Degree` sends the nearby region's whole-degree box with the keyword, `None` sends no region. `.collection(..)` and `.sort(..)` work as for a nearby search. It runs a nearby search first. If some nearby hit matches the keyword word for word, that's the answer and the keyword stays on the device. Otherwise it sends the keyword and puts the keyword hits first, then the nearby hits, without duplicates. Each is a `FallbackHit::Nearby` or `FallbackHit::Keyword`; `hit.via()` says which. `disclosed` says whether the keyword went out. If the server refuses the keyword as too short (`KeywordRequired`), you get the nearby result, with `disclosed.keyword` true. Any other failed keyword request fails the call and the nearby results are lost, though the keyword may have reached the server.
+
+### `autocomplete_by_keyword(options) -> KeywordAutocomplete` (async client only)
+
+```rust
+let field = atgeo.autocomplete_by_keyword(KeywordOptions::new("overturemaps.org"))?;
+
+// on each change to the text field:
+match field.search_by_keyword(&text).await {
+    Ok(found) => show(&found.places),
+    Err(atgeo::Error::Superseded) => {} // a later keystroke replaced this call
+    Err(e) => return Err(e),
+}
+```
+
+Takes the same `KeywordOptions` as `search_by_keyword`, and returns an object whose `search_by_keyword(keyword)` behaves like it. Make one per text field. Each call supersedes the previous one on the same autocompleter, which resolves to `Error::Superseded`. Ignore it. Input the server would refuse (`a`, a single character) makes no request and resolves an empty result. **Every other string goes to the server as typed, prefixes included.** Debouncing is up to you. There's no autocompleter in the blocking client, since a blocking call can't be cancelled in flight.
 
 ### `get_place(origin) -> PlaceRecord`
 
-Returns `origin`, `place` and `importance`, with the same `name()` and `location()`. Cache first, then the server.
+Returns `origin`, `place`, `importance` and `attribution`, with the same `name()` and `location()`. Answered from a cached tile if one holds the place; otherwise a request to `org.atgeo.getPlace`. A keyword search caches nothing, so for a keyword hit this usually goes to the network.
 
 ### `describe_service() -> ServiceDescription` and `describe_tileset(slug) -> Tileset`
 
 The first is cached for an hour, the second isn't. Fields are `Option`s (except lists the lexicon requires, which are `Vec`s); a field the server drops or retypes comes back `None` or empty.
+
+## Attribution and `disclosed`
+
+Every search result has an `attribution` list: the credit owed for the data the search used, one `Attribution` per `(dataset, collection)`, with `licenses` and the `attribution` URL (the upstream's attribution or copyright page) when the server gave them. Show it wherever you show the places. `get_place` returns the place's own list. Each hit's `collection` says which entry it came from.
+
+Every search result also has `disclosed`, a `Disclosure { keyword, region }` that says what the server learned during that call. `keyword` is true if the keyword was sent. `region` is the grid, in degrees, of the finest region sent (`0.01` for a tile search, `1` for a keyword search with a box), or `None` if none was.
+
+## Keyword methods and privacy
+
+A method whose name contains `keyword` may send the keyword to the server; no other method sends your text. The server's own search index matches it, so these methods can find a place anywhere in the dataset, not just in the tiles you hold. The cost is that the server is told what you typed. `search_nearby` tells it a 0.01 degree cell and nothing about your text.
+
+The server keeps no log of what it receives; that is garganorn's design. An operator who chose to could still record the keyword along with the time and your address, and a hostile one could. Whether that's acceptable for a feature is your app's decision. A region goes out only as whole degrees, about 111 km of latitude, and `disclosed` reports what each call sent.
+
+An autocompleter sends one request per qualifying prefix. Debouncing reduces how many go out; the autocompleter doesn't debounce, so that choice is yours. The [Client SDKs](/sdk/#what-goes-on-the-wire) page lists everything each call sends.
 
 ## Concurrency
 
@@ -119,12 +179,13 @@ The async client spawns nothing and has no runtime of its own: a search runs ins
 
 `atgeo::Error` is one enum:
 
-- `Error::Atgeo(AtgeoError)`: a non-2xx from the server, with `code` (or `HttpError`), `message` and `status`.
+- `Error::Atgeo(AtgeoError)`: a non-2xx from the server, with `code`, `message` and `status`. Codes are the server's (`PlaceNotFound`, `BboxTooLarge`, `KeywordRequired`, ...), or `HttpError` if there was no error body.
 - `Error::Decoding(DecodingError)`: a 2xx body that isn't JSON or has nothing usable in it.
 - `Error::Transport(BoxError)`: no response arrived. `downcast_ref::<reqwest::Error>()` reaches the transport's own error.
-- `Error::InvalidArgument(ArgumentError)`: an invalid region, `Similarity` without text, or a `server` that isn't an http(s) URL or has credentials. Found before any request.
+- `Error::Superseded`: an autocompleter call that a later call replaced. Ignore it.
+- `Error::InvalidArgument(ArgumentError)`: an invalid region (a `KeywordRegion` included), `Similarity` without text (or, for the fallback, a keyword that normalizes to nothing), or a `server` that isn't an http(s) URL or has credentials. Found before any request.
 
-`Display` says what went wrong at its own level; walk `source()` for the cause. A `TileFailure` has `url`, `kind` (`Refused`, `Status`, `Decode`, `Transport`), `status: Option<u16>` and `error: Option<Arc<atgeo::Error>>`. Failures are equal when their `url`, `kind` and `status` are.
+`Display` says what went wrong at its own level; walk `source()` for the cause. A failed `getTiles` request fails the search. A failed tile doesn't (see [tile failures](/sdk/#tile-failures)). A `TileFailure` has `url`, `kind` (`Refused`, `Status`, `Decode`, `Transport`), `status: Option<u16>` and `error: Option<Arc<atgeo::Error>>`. Failures are equal when their `url`, `kind` and `status` are.
 
 ## Conformance
 
