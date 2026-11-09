@@ -122,7 +122,7 @@ do {
 }
 ```
 
-Returns an object whose `searchByKeyword(_:)` behaves like `searchByKeyword`. Make one per text field. Each call supersedes the previous one on the same autocompleter, which throws `CancellationError` although its own task wasn't cancelled; ignore it. Input the server would refuse (`a`, a single character) makes no request and resolves an empty result. **Every other string goes to the server as typed, prefixes included.** Debouncing is up to you.
+Returns an object whose `searchByKeyword(_:)` behaves like `searchByKeyword`. Make one per text field. Each call supersedes the previous one on the same autocompleter, which throws `CancellationError` although its own task wasn't cancelled; ignore it. Input the server would refuse (`a`, a single character) makes no request and resolves an empty result. **Every other string goes to the server as typed, prefixes included.** Debouncing is up to you. If the server refuses a keyword that passed that check (`KeywordRequired`), the call resolves empty with `disclosed.keyword` true, and `disclosed.region` `1` if the autocompleter has a region, else `nil`.
 
 ### `getPlace(origin:) -> PlaceRecord`
 

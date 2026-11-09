@@ -255,14 +255,21 @@ test('upstreamLink points OSM origins at openstreetmap.org', () => {
   assert.equal(upstreamLink(null), null);
 });
 
-test('xrpcURL builds a query URL and leaves out empty parameters', () => {
+test('xrpcURL builds a query URL, dropping undefined and null but keeping empty strings', () => {
   assert.equal(
     xrpcURL('https://places.atgeo.org', 'org.atgeo.getTiles', {
       dataset: 'openstreetmap.org',
       collection: '',
+      slug: undefined,
+      uri: null,
       bbox: '-75.17,39.95,-75.16,39.96',
     }),
-    'https://places.atgeo.org/xrpc/org.atgeo.getTiles?dataset=openstreetmap.org&bbox=-75.17%2C39.95%2C-75.16%2C39.96',
+    'https://places.atgeo.org/xrpc/org.atgeo.getTiles?dataset=openstreetmap.org&collection=&bbox=-75.17%2C39.95%2C-75.16%2C39.96',
+  );
+  // The query demo shows the request as typed: an empty q is sent, and the server answers KeywordRequired.
+  assert.equal(
+    xrpcURL('https://places.atgeo.org', 'org.atgeo.searchPlaces', { ...searchOptions('osm'), q: '' }),
+    'https://places.atgeo.org/xrpc/org.atgeo.searchPlaces?dataset=openstreetmap.org&q=',
   );
   assert.equal(
     xrpcURL('https://places.atgeo.org', 'org.atgeo.describeService', {}),

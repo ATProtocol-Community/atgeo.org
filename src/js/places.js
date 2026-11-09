@@ -245,7 +245,7 @@ export function upstreamLink(origin) {
 
 export function xrpcURL(server, nsid, params = {}) {
   const qs = new URLSearchParams(
-    Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== ''),
+    Object.entries(params).filter(([, v]) => v !== undefined && v !== null),
   ).toString();
   return `${server}/xrpc/${nsid}${qs ? `?${qs}` : ''}`;
 }
