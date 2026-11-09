@@ -119,7 +119,7 @@ input.addEventListener("input", async () => {
 });
 ```
 
-Takes `dataset`, `collection?` and `region?`, and returns an object whose `searchByKeyword(keyword, { signal }?)` behaves like `searchByKeyword`. Each call aborts the previous one on the same autocompleter, which rejects with an `AbortError`. Make one per text field. Input the server would refuse (`a`, a single character) makes no request and resolves an empty result. **Every other string goes to the server as typed, prefixes included.** Debouncing is up to you.
+Takes `dataset`, `collection?` and `region?`, and returns an object whose `searchByKeyword(keyword, { signal }?)` behaves like `searchByKeyword`. Each call aborts the previous one on the same autocompleter, which rejects with an `AbortError`. Make one per text field. Input the server would refuse (`a`, a single character) makes no request and resolves an empty result. **Every other string goes to the server as typed, prefixes included.** Debouncing is up to you. If the server refuses a keyword that passed that check (`KeywordRequired`), the call resolves empty with `disclosed.keyword` true, and `disclosed.region` `1` if the autocompleter has a region, else `null`.
 
 ### `getPlace({ origin }): Promise<PlaceRecord>`
 

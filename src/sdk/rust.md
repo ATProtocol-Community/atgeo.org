@@ -147,7 +147,7 @@ match field.search_by_keyword(&text).await {
 }
 ```
 
-Takes the same `KeywordOptions` as `search_by_keyword`, and returns an object whose `search_by_keyword(keyword)` behaves like it. Make one per text field. Each call supersedes the previous one on the same autocompleter, which resolves to `Error::Superseded`. Ignore it. Input the server would refuse (`a`, a single character) makes no request and resolves an empty result. **Every other string goes to the server as typed, prefixes included.** Debouncing is up to you. There's no autocompleter in the blocking client, since a blocking call can't be cancelled in flight.
+Takes the same `KeywordOptions` as `search_by_keyword`, and returns an object whose `search_by_keyword(keyword)` behaves like it. Make one per text field. Each call supersedes the previous one on the same autocompleter, which resolves to `Error::Superseded`. Ignore it. Input the server would refuse (`a`, a single character) makes no request and resolves an empty result. **Every other string goes to the server as typed, prefixes included.** Debouncing is up to you. If the server refuses a keyword that passed that check (`KeywordRequired`), the call resolves empty with `disclosed.keyword` true, and `disclosed.region` `1` if the autocompleter has a region, else `None`. There's no autocompleter in the blocking client, since a blocking call can't be cancelled in flight.
 
 ### `get_place(origin) -> PlaceRecord`
 

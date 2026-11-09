@@ -133,7 +133,7 @@ scope.launch {
 }
 ```
 
-Not a `suspend` function itself; it returns an object whose `suspend fun searchByKeyword(keyword)` behaves like `searchByKeyword`. Make one per text field. Each call supersedes the previous one on the same autocompleter, which throws `CancellationException` although its caller is still active: treat that as "superseded" and ignore it (left uncaught in a `launch {}`, it ends that coroutine quietly). Input the server would refuse (`a`, a single character) makes no request and resolves an empty result. **Every other string goes to the server as typed, prefixes included.** Debouncing is up to you.
+Not a `suspend` function itself; it returns an object whose `suspend fun searchByKeyword(keyword)` behaves like `searchByKeyword`. Make one per text field. Each call supersedes the previous one on the same autocompleter, which throws `CancellationException` although its caller is still active: treat that as "superseded" and ignore it (left uncaught in a `launch {}`, it ends that coroutine quietly). Input the server would refuse (`a`, a single character) makes no request and resolves an empty result. **Every other string goes to the server as typed, prefixes included.** Debouncing is up to you. If the server refuses a keyword that passed that check (`KeywordRequired`), the call resolves empty with `disclosed.keyword` true, and `disclosed.region` `1.0` if the autocompleter has a region, else `null`.
 
 ### `getPlace(origin): PlaceRecord`
 
@@ -141,7 +141,7 @@ Returns `PlaceRecord(origin, place, importance, attribution)`, with the same `na
 
 ### `describeService(): ServiceDescription` and `describeTileset(slug): Tileset`
 
-The first is cached for an hour, the second isn't. Missing or wrong-typed fields come back `null`. The types are `@Serializable`, in case you want to store them.
+The first is cached for an hour, the second isn't. A missing or wrong-typed field comes back `null`, except the lists `ServiceDescription.tilesets`, `ServedTileset.collections` and `Tileset.collections`, which come back empty. (`Tileset.references` and the lists inside `CollectionInfo` are `null` when absent.) The types are `@Serializable`, in case you want to store them.
 
 ## Attribution and `disclosed`
 

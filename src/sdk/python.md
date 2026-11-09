@@ -59,16 +59,15 @@ async def main() -> None:
         )
         print(len(result.places))
 
+        # For a place that isn't nearby, search_by_keyword sends the keyword to the server.
+        found = await atgeo.search_by_keyword("Liberty Bell", dataset="overturemaps.org")
+        print([p.name for p in found.places], found.disclosed)  # Disclosure(keyword=True, region=None)
+
 
 asyncio.run(main())
 ```
 
-Misspellings are fine. `search_nearby` never sends your text to the server. For a place that isn't nearby, `search_by_keyword` does, and says so in its name:
-
-```python
-found = atgeo.search_by_keyword("Liberty Bell", dataset="overturemaps.org")
-print([p.name for p in found.places], found.disclosed)  # Disclosure(keyword=True, region=None)
-```
+Misspellings are fine. `search_nearby` never sends your text to the server. For a place that isn't nearby, `search_by_keyword` does, and says so in its name (see the last lines of the example above).
 
 Check `result.complete` and `result.overview` too; if tiles failed, `result.tile_failures` says which and why.
 
@@ -145,7 +144,7 @@ async def on_keystroke(text: str) -> None:
     show(result.places)
 ```
 
-Returns an object whose `await search_by_keyword(keyword)` behaves like `search_by_keyword`. Make one per text field. Each call supersedes the previous one on the same autocompleter, which ends with `asyncio.CancelledError` although the awaiting task wasn't cancelled; `current_task().cancelling()` is 0 for a superseded call. Input the server would refuse (`a`, a single character) makes no request and returns an empty result. **Every other string goes to the server as typed, prefixes included.** Debouncing is up to you. The blocking client has no autocompleter, since a blocking call can't be cancelled in flight.
+Returns an object whose `await search_by_keyword(keyword)` behaves like `search_by_keyword`. Make one per text field. Each call supersedes the previous one on the same autocompleter, which ends with `asyncio.CancelledError` although the awaiting task wasn't cancelled; `current_task().cancelling()` is 0 for a superseded call. Input the server would refuse (`a`, a single character) makes no request and returns an empty result. **Every other string goes to the server as typed, prefixes included.** Debouncing is up to you. If the server refuses a keyword that passed that check (`KeywordRequired`), the call returns an empty result with `disclosed.keyword` true, and `disclosed.region` `1.0` if the autocompleter has a region, else `None`. The blocking client has no autocompleter, since a blocking call can't be cancelled in flight.
 
 ### `get_place(origin) -> PlaceRecord`
 
