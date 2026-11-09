@@ -7,7 +7,7 @@ export const DATASETS = [
   { id: 'overture-division', label: 'Overture divisions', dataset: 'overturemaps.org', collection: 'division' },
 ];
 
-// The dataset/collection options searchPlaces takes for one of DATASETS.
+// The dataset/collection options searchNearby takes for one of DATASETS.
 export function searchOptions(id) {
   const d = DATASETS.find((d) => d.id === id);
   if (!d) throw new TypeError(`unknown dataset choice: ${id}`);

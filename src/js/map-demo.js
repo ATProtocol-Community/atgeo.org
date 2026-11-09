@@ -169,8 +169,8 @@ if (container) {
       }));
       if (seq !== searchSeq) return;
       if (box) region = box;
-      // searchPlaces throws synchronously for a bad region; await inside try catches both.
-      result = await atgeo.searchPlaces({
+      // searchNearby throws synchronously for a bad region; await inside try catches both.
+      result = await atgeo.searchNearby({
         region: { bbox: region },
         text: text || undefined,
         ...options,
@@ -248,7 +248,7 @@ if (container) {
 
     clearError();
 
-    // The position only moves the map; searchPlaces snaps whatever region it's given
+    // The position only moves the map; searchNearby snaps whatever region it's given
     // before anything leaves the browser.
     navigator.geolocation.getCurrentPosition(
       function onSuccess(position) {

@@ -7,7 +7,7 @@ title: "Lexicon"
 
 `org.atgeo.place` is the record type for a geographic place: a name, one or more locations, and whatever the upstream dataset knows about it.
 
-More lexicons ride along: [`org.atgeo.defs`](#org-atgeo-defs) (shared definitions), [`org.atgeo.tilePayload`](#org-atgeo-tilepayload) (what a tile file looks like) and the four query lexicons, which are documented on the [XRPC API](/api/) page.
+More lexicons ride along: [`org.atgeo.defs`](#org-atgeo-defs) (shared definitions), [`org.atgeo.tilePayload`](#org-atgeo-tilepayload) (what a tile file looks like) and the five query lexicons, which are documented on the [XRPC API](/api/) page.
 
 ## Fetching the lexicons
 

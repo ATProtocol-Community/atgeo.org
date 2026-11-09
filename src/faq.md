@@ -20,9 +20,11 @@ the exact decimal representation from the source data, with no risk
 of silent precision loss from floating-point arithmetic.
 
 
-## Why is there no search parameter?
+## Why don't the tiles have a search parameter?
 
-Because the server would then learn what you're looking for, and where. Instead you ask for the tiles covering a region and search them yourself. The [client SDKs](/sdk/) do the matching and ranking locally. The cost is that you need to know roughly where to look: you can't search for "Kyoto" without a region.
+Because the server would then learn what you're looking for, and where. Instead you ask for the tiles covering a region and search them yourself. The [client SDKs](/sdk/) do the matching and ranking locally. The cost is that you need to know roughly where to look.
+
+For when you don't, there's a separate keyword search, [`org.atgeo.searchPlaces`](/api/#org-atgeo-searchplaces): it takes the words the user typed and, optionally, a box in whole degrees, and returns at most 20 matches, most important first. That one does tell the server the keyword, which is why it's a separate call, the server keeps no log of it, and the SDK methods that use it have `Keyword` in their names. It never takes a point, so it learns nothing about where you are beyond a degree cell, if you send one.
 
 ## Why won't the API take my exact coordinates?
 

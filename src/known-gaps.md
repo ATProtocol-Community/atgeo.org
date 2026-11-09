@@ -11,7 +11,7 @@ What's shipped, and what's still open. The backend's [planned features](https://
 
 - **Worldwide coverage.** OpenStreetMap, Overture places and Overture divisions for the whole planet.
 - **[Client SDKs](/sdk/)** in JavaScript, Swift, Kotlin, Python and Rust. They're pre-release, installed from GitHub, but they exist.
-- **Fuzzy search, on the client.** The server has no text search and never sees what you typed. The SDK fetches the tiles for your region and matches and ranks them locally.
+- **Fuzzy search, on the client.** For a nearby search the server never sees what you typed: the SDK fetches the tiles for your region and matches and ranks them locally. For a place that isn't nearby, a keyword search sends the server the words, and the SDK methods that do so say `Keyword` in their names.
 - **Variants and multilingual names.** `variants` carry alternate, official, short, colloquial and historical names, with a language when known.
 - **Licences and attribution in every tile.** Each collection's licences and attribution page ride in the tile payload.
 - **Containment.** `relations.within` answers "what city is this in?" from [Overture Divisions](/divisions/), broadest first.

@@ -55,7 +55,7 @@ When Overture has an address, the place gets a second location, `community.lexic
 
 ## Containment and importance
 
-`relations.within` lists the [Overture Divisions](/divisions/) containing the place, broadest first. `importance` (0 to 100) is computed per tileset from how busy the surroundings are and how rare the category is, and it only means something relative to other `overture-place` records. It rides beside the record in a tile, not inside it. The [API page](/api/) has the formula.
+`relations.within` lists the [Overture Divisions](/divisions/) containing the place, broadest first. `importance` (0 to 100) is computed from how busy the surroundings are and how rare the category is, scaled into 0 to 80. Overture places get no notability lift, because their only Wikidata link names a brand, not the store. It ranks against [Overture Divisions](/divisions/) from this gazetteer, but means nothing next to an OSM record's score. It rides beside the record in a tile, not inside it. The [API page](/api/) has the formula.
 
 ## Example
 

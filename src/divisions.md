@@ -36,11 +36,11 @@ A division has a bounding box, not a point and not a polygon: `north`, `south`, 
 
 ## Importance
 
-Importance is 0 to 100, relative to other divisions. For most divisions it comes from population alone:
+Importance is 0 to 100, and ranks against Overture places as well as other divisions. It comes from how many people live in a division or how big it is, and nothing else; subtype and administrative level don't enter:
 
-    importance = round(40 · min(ln(1 + population) / 20, 1))
+    base = round(100 · max(min(ln(1 + population) / 20, 1), min(ln(1 + area) / 16, 1)))
 
-so everything but a locality tops out at 40. A locality also gets the same "how busy are the surroundings" term that places use, so it can reach 100. The constants are the reference producer's choices, not protocol.
+with `area` the bounding box's area in km², standing in where Overture has no population. The base is scaled by 0.8, so a division tops out at 80 on size alone. A division with a `wikidata` item whose Wikipedia page is well known gets a lift into the remaining 20 points, which is what puts Paris above a large, empty district. The constants are the reference producer's choices, not protocol; the [API page](/api/#importance) has the full formula.
 
 ## Containment levels
 
@@ -103,7 +103,7 @@ Center City, a macrohood in Philadelphia, from a live tile (trimmed):
       ]
     }
   },
-  "importance": 24
+  "importance": 54
 }
 ```
 

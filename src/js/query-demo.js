@@ -1,10 +1,16 @@
-// API explorer: send the four org.atgeo queries as they are, or run a search through
+// API explorer: send the five org.atgeo queries as they are, or run a search through
 // @atgeo/client and watch every request it makes.
 
 import { createClient, SERVER } from './client.js';
 import { DATASETS, searchOptions, xrpcURL, highlightJson, escapeHtml } from './places.js';
 
-const METHODS = ['org.atgeo.getTiles', 'org.atgeo.getPlace', 'org.atgeo.describeService', 'org.atgeo.describeTileset'];
+const METHODS = [
+  'org.atgeo.getTiles',
+  'org.atgeo.searchPlaces',
+  'org.atgeo.getPlace',
+  'org.atgeo.describeService',
+  'org.atgeo.describeTileset',
+];
 const SLUGS = ['overture-place', 'osm', 'overture-division'];
 
 function buildHTML() {
@@ -17,7 +23,7 @@ function buildHTML() {
             ${METHODS.map((m) => `<option value="${m}">${m.replace('org.atgeo.', '')}</option>`).join('')}
           </select>
         </label>
-        <label class="query-field" data-methods="org.atgeo.getTiles">
+        <label class="query-field" data-methods="org.atgeo.getTiles org.atgeo.searchPlaces">
           <span class="query-label">dataset</span>
           <select name="dataset" id="qd-dataset">
             ${DATASETS.map((d) => `<option value="${d.id}">${escapeHtml(d.label)}</option>`).join('')}
@@ -26,6 +32,14 @@ function buildHTML() {
         <label class="query-field" data-methods="org.atgeo.getTiles">
           <span class="query-label">bbox</span>
           <input type="text" name="bbox" id="qd-bbox" value="-75.17,39.95,-75.16,39.96" />
+        </label>
+        <label class="query-field" data-methods="org.atgeo.searchPlaces">
+          <span class="query-label">q (sent to the server)</span>
+          <input type="text" name="q" id="qd-q" value="liberty bell" />
+        </label>
+        <label class="query-field" data-methods="org.atgeo.searchPlaces">
+          <span class="query-label">bbox (whole degrees, optional)</span>
+          <input type="text" name="kbbox" id="qd-kbbox" value="" placeholder="-76,39,-75,40" />
         </label>
         <label class="query-field" data-methods="org.atgeo.getPlace">
           <span class="query-label">uri</span>
@@ -59,6 +73,9 @@ function currentRequest() {
   let params = {};
   if (method === 'org.atgeo.getTiles') {
     params = { ...searchOptions($('qd-dataset').value), bbox: $('qd-bbox').value.trim() };
+  } else if (method === 'org.atgeo.searchPlaces') {
+    const kbbox = $('qd-kbbox').value.trim();
+    params = { ...searchOptions($('qd-dataset').value), q: $('qd-q').value, ...(kbbox ? { bbox: kbbox } : {}) };
   } else if (method === 'org.atgeo.getPlace') {
     params = { uri: $('qd-uri').value.trim() };
   } else if (method === 'org.atgeo.describeTileset') {
@@ -157,7 +174,7 @@ function runSearch() {
     const bbox = parseBbox($('qd-bbox').value);
     const log = [];
     const atgeo = createClient({ onResponse: (entry) => log.push(entry) });
-    const result = await atgeo.searchPlaces({ region: { bbox }, text: text || undefined, ...searchOptions(datasetId) });
+    const result = await atgeo.searchNearby({ region: { bbox }, text: text || undefined, ...searchOptions(datasetId) });
 
     const parts = [];
 

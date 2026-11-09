@@ -7,7 +7,7 @@ title: "XRPC API"
 
 {% queryDemo %}
 
-Pick a method, fill in its parameters and send it. For `getTiles` you can also run a search through the JavaScript client and see every request it makes, which is the point of the next section.
+Pick a method, fill in its parameters and send it. For `getTiles` you can also run a search through the JavaScript client and see every request it makes, which is the point of the next section. `searchPlaces` sends what you type in `q` to the server; nothing else here does.
 
 This page is the practical tour of the interface. The normative text is the [ATGeo spec](https://github.com/schuyler/garganorn/blob/main/docs/atgeo-spec.md), and where the two disagree, the spec wins. The interface is implemented in [Garganorn](https://github.com/schuyler/garganorn), and the public endpoint is hosted with the generous support of the [AT Protocol Community Fund](https://atprotocol.dev/community-fund/).
 
@@ -19,7 +19,7 @@ If you're writing an app, you probably want an [SDK](/sdk/), which does everythi
 
 The server must never receive information precise enough to locate a person.
 
-Everything unusual about this API follows from that one rule. There is no server-side search, so search terms, which reveal intent, never leave your device. There is no way to list or enumerate places. The only spatial question you can ask is coarse: which tiles cover this region, at a precision floor of roughly a kilometer. The only other question names a place you already know the identity of. Neither shape lets a query describe a point, so no query can resolve to a device's position.
+Everything unusual about this API follows from that one rule: nothing on the wire reveals where you are unless you act to opt in. There is no way to list or enumerate places. The spatial question you can ask is coarse: which tiles cover this region, at a precision floor of roughly a kilometer. A keyword search takes a keyword the user typed, which is their own action and no evidence of where they are, and an optional region in whole degrees; it takes no point and ranks by no distance. The remaining question names a place you already know the identity of. None of these shapes lets a query describe a point, so no query can resolve to a device's position. A keyword still reveals intent, so the server keeps it in no log, and the tiles remain the way to search without telling the server what you're looking for.
 
 The threat model and the reasoning are in [tile-privacy-design.md](https://github.com/schuyler/garganorn/blob/main/docs/tile-privacy-design.md).
 
@@ -29,9 +29,11 @@ The threat model and the reasoning are in [tile-privacy-design.md](https://githu
 2. Fetch every URL and concatenate the `records` arrays.
 3. Deduplicate by `origin`, drop records of collections you didn't ask for, and match, rank and filter locally.
 
-That merged set is the query result. The server never sees what you were looking for. There's no pagination, no server-side ranking and no partial-result protocol.
+That merged set is the query result. The server never sees what you were looking for. Tiles come with no pagination, no server-side ranking and no partial-result protocol.
 
 For a region too big for the regular tiles, the answer is a sample: see [the overview band](#the-overview-band).
+
+To find a place by name without knowing where it is, call `org.atgeo.searchPlaces` with a dataset and the keyword the user typed. The server answers with at most 20 places, most important first. It learns the keyword and nothing about where the user is, beyond a whole-degree box if you send one. See [`org.atgeo.searchPlaces`](#org-atgeo-searchplaces).
 
 To fetch a single place whose identity you already hold, call `org.atgeo.getPlace`. Prefer tiles you already have: `getPlace` tells the server exactly which place you're looking at, which is a sharper signal than the box `getTiles` sees. It exists for resolving a link someone shared, where you have an identity and no region.
 
@@ -55,7 +57,7 @@ A tile can hold records of a collection you didn't ask for (all three OSM elemen
 
 ## Methods
 
-All four are `GET /xrpc/{nsid}`, all described by lexicons, and none needs authentication. Responses may include keys not documented here; ignore keys you don't recognize.
+All five are `GET /xrpc/{nsid}`, all described by lexicons, and none needs authentication. Responses may include keys not documented here; ignore keys you don't recognize.
 
 
 ### `org.atgeo.getTiles`
@@ -99,6 +101,66 @@ GET /xrpc/org.atgeo.getTiles?dataset=overturemaps.org&collection=place&bbox=-75.
 | `BboxTooLarge` | The box covers more tiles than the budget and a selected tileset has no overview band. Ask for a smaller region |
 
 Errors are listed in the order they're evaluated. A tileset with an overview band never raises `BboxTooLarge`.
+
+
+### `org.atgeo.searchPlaces`
+
+Places in a dataset whose name matches a keyword, most important first. Unlike everything else here, **this sends the server what the user typed.**
+
+`GET https://places.atgeo.org/xrpc/org.atgeo.searchPlaces`
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `dataset` | string | Yes | A domain, like `openstreetmap.org` |
+| `collection` | string | No | A collection, like `way`. Without it, every tileset carrying the dataset is searched and the results merged |
+| `q` | string | Yes | The keyword, at most 256 bytes of UTF-8 |
+| `bbox` | string | No | `west,south,east,north` in **whole** degrees ([the precision floor](#the-precision-floor)). Without it, the whole dataset is searched |
+
+There's no point parameter and no count parameter.
+
+**Matching.** The keyword and every name are lowercased, stripped of accents and apostrophes, and split into words at punctuation and whitespace. A place matches when every word of the keyword begins some word of *one* of its names, its `name` or one of its `variants`. So `st louis` finds `St. Louis`, `mcdonalds` finds `McDonald's`, and `golden puerta` finds nothing when `Golden` is in the name and `Puerta` only in a variant. It's prefix matching, not fuzzy: `starbux` finds nothing. Only the first 12 distinct words count, and at least one of them must be two or more characters long. That floor and that cap are what bound a search's cost; the price is that a name whose every word is one character (`Å`, `Y`) can't be found this way.
+
+**Region.** `bbox` uses the same order and antimeridian rule as `getTiles`, but every coordinate is a whole number: `10` passes, `10.0`, `10.5` and `1e1` are `BboxTooPrecise`. A place is in the region when its point is or, for a place with only a bounding box, when that box meets the region; edges count as inside.
+
+**Ranking.** `importance` descending (absent counts as 0), then record key ascending. No distance enters it, and nothing else does: a place's notability counts only through the [importance](#importance) it was scored with, the same number the tiles carry.
+
+```
+GET /xrpc/org.atgeo.searchPlaces?dataset=openstreetmap.org&q=liberty%20bell&bbox=-76,39,-75,40
+```
+
+```json
+{
+  "places": [
+    {
+      "uri": "urn:atgeo:openstreetmap.org:way:40086417",
+      "url": "https://places.atgeo.org/openstreetmap.org/way/40086417",
+      "importance": 60,
+      "value": { "$type": "org.atgeo.place", "name": "Liberty Bell Center", ... },
+      "attribution": [ ... ]
+    },
+    {
+      "uri": "urn:atgeo:openstreetmap.org:node:1207480649",
+      "url": "https://places.atgeo.org/openstreetmap.org/node/1207480649",
+      "importance": 59,
+      "value": { "$type": "org.atgeo.place", "name": "Liberty Bell", ... },
+      "attribution": [ ... ]
+    },
+    "..."
+  ]
+}
+```
+
+At most 20 places, each the same `{uri, url, importance?, value, attribution}` view `getPlace` returns for it. The bound is fixed; there's no pagination. The response carries no `Cache-Control`, so no shared cache is invited to keep a URL with a keyword in it.
+
+| Error | Description |
+|-------|-------------|
+| `BboxTooPrecise` | A `bbox` coordinate isn't a whole number of degrees |
+| `InvalidBbox` | As for `getTiles` |
+| `DatasetNotFound` | No tileset carries the dataset |
+| `CollectionNotFound` | The dataset is served, but no tileset carries the collection |
+| `KeywordRequired` | Among `q`'s first 12 distinct words, none is two or more characters long. `""`, `&`, `Å` and `a b` are all refused |
+
+Errors are listed in the order they're evaluated. A missing `q` is `InvalidRequest`, as is any parameter the lexicon doesn't declare.
 
 
 ### `org.atgeo.getPlace`
@@ -239,7 +301,7 @@ The descriptor for one tileset: what's in it, where, and under what terms.
 
 ## The overview band
 
-A tileset may carry a coarse band of tiles at zooms 1 through 5 alongside the regular ones. It holds the 10,000 records with the highest `importance`, ties broken by id. That's one cut, the same for every tileset: the division formula's [administrative floors](#importance) are what keep countries, dependencies and regions in it. A tileset's descriptor says whether it has a band, in `overview`.
+A tileset may carry a coarse band of tiles at zooms 1 through 5 alongside the regular ones. It holds the 10,000 records with the highest `importance`, ties broken by id. That's one plain [importance](#importance) cut, the same for every tileset. In an OSM tileset it keeps the cities and towns, universities, stations and the few landmarks scoring above the cutoff; most city-scale landmarks stay outside it. A tileset's descriptor says whether it has a band, in `overview`, and `overview.records` is how many records the band actually holds.
 
 `getTiles` uses the band as a fallback. It answers from the regular tiles first. If that would cover more than the tile budget (`describeService`'s `maxTiles`, 75 here) and every selected tileset has an overview band, it returns the overview tiles that intersect the box instead, with no budget applied, and sets `"overview": true`. The result is deliberately a sample of the region, not everything in it. A live example, a ten-degree box over the northeast:
 
@@ -278,6 +340,8 @@ GET /xrpc/org.atgeo.getTiles?dataset=openstreetmap.org&bbox=-75.171,39.95,-75.16
 ```
 
 Clients snap *outward* before sending, so the grid box contains the region they care about, and keep the original box around for filtering results.
+
+A `searchPlaces` region is held to whole degrees, a grid about 111 km north to south. The keyword does the narrowing there, so the region has no need to be fine, and a region an app attaches without asking, a map viewport say, tells the server no more than which degree cell the user is looking at. The same textual check applies: `-76.0` is `BboxTooPrecise`.
 
 Refusal doesn't protect the coordinates in the refused request: the server has to receive a value to judge it. The guarantee is against sustained exposure. A leaking client is caught on its first request, not months later.
 
@@ -346,43 +410,45 @@ There's no version field. Lexicons evolve upgrade-only, so the rule that governs
 
 ## Importance
 
-`importance` is an integer from 0 to 100 saying how much a place matters relative to other places. It blends how busy the place's surroundings are with how distinctive its category is (for a division, how many people live in it).
+`importance` is an integer from 0 to 100 saying how much a place matters relative to other places. It blends how busy the place's surroundings are, how distinctive its category is (for a division, how many people live in it or how large it is), and, where the source ties the place to a Wikidata item, how well known that item is.
 
 Scores are comparable across the tilesets one producer builds from one dataset. So Garganorn's `overture-place` and `overture-division` scores rank against each other, and a dataset-wide `overturemaps.org` search can rank places and divisions together. They're meaningless across producers and across datasets: an Overture place scoring 62 and an OSM place scoring 62 were scored against different corpora with different category vocabularies.
 
-Garganorn computes it like this. For places (Overture places, and OSM nodes, ways and relations):
+Garganorn computes it in two steps: a base score, then a lift for notability.
+
+**Base, places.** For Overture places, and OSM nodes, ways and relations:
 
 ```
-importance = round(60 * min(density / 10, 1) + 40 * min(idf / 18, 1))
+base = round(60 * min(density / 10, 1) + 40 * min(idf / 18, 1))
 ```
 
 where `density` is ln(1 + n) for n Overture places in the enclosing zoom-15 cell (Overture-derived even for OSM records, so both share one notion of "busy"), and `idf` is ln(N / n) over the source's named places, n being the places in the record's primary category. Rare categories score high, ubiquitous ones low.
 
-For divisions, the administrative level sets a floor and a ceiling, and a 0-to-1 signal places the division between them:
+**Base, divisions.** How many people live in it or how big it is, and nothing else; subtype and administrative level don't enter:
 
 ```
-importance = round(floor + (ceiling - floor) * s)
-
-s = min(ln(1 + population) / 20, 1)                                      every subtype but locality
-s = 0.6 * min(density / 10, 1) + 0.4 * min(ln(1 + population) / 20, 1)  locality
+base = round(100 * max(min(ln(1 + pop) / 20, 1), min(ln(1 + area) / 16, 1)))
 ```
 
-with `density` averaged over the zoom-15 cells the locality's bounding box touches. A division with no recorded population (and, for a locality, no density) sits at its floor.
+`pop` is the recorded population (0 when none) and `area` the area of the bounding box in km². Population is logarithmic because it spans one to 1.4 billion; 20 saturates near 500 million, so only China and India cap. Area stands in where population is missing, which Overture lacks for about a fifth of countries and most regions; 16 saturates near 9 million km². The two combine with `max`, so a large, populous division isn't counted twice.
 
-| subtype | floor | ceiling |
-|---|--:|--:|
-| `country` | 90 | 100 |
-| `dependency` | 85 | 100 |
-| `region` | 80 | 100 |
-| `county` | 40 | 79 |
-| `localadmin` | 35 | 79 |
-| `locality` | 30 | 79 |
-| `borough` | 20 | 79 |
-| `macrohood` | 15 | 79 |
-| `neighborhood` | 10 | 79 |
-| `microhood` | 5 | 79 |
+**Scale.** Every base is multiplied by 0.8, so it tops out at 80. The remaining 20 points are headroom for notability, and the scale keeps a place with no notability evidence below one with plenty: unscaled, downtown businesses would lead a city view ahead of its landmarks. A record with no Wikidata item, or whose item has no page rank, scores `round(0.8 * base)` and nothing more. Overture places always do: their only Wikidata field names a brand, not the store.
 
-Countries, dependencies and regions share the 80-to-100 range and everything below them tops out at 79, so the weakest region still outranks the densest city. That's what lets the overview band be a plain importance cut. The constants (10, 18, 20) and the floors and ceilings are producer parameters, not protocol; another gazetteer could pick differently.
+**Lift.** For an OSM record or a division with a Wikidata item, the item's Wikipedia page rank `pr` (from Nominatim's `wikimedia-importance` data) raises the score, with `b = 0.8 * base`:
+
+```
+x          = clamp((pr - 0.20) / 0.80, 0, 1)
+f          = ln(1 + 50x) / ln(51)
+g          = 1 - clamp(ln(nc / 1000) / ln(10), 0, 1)
+importance = round(b + (100 - b) * 0.95 * f * g)
+```
+
+- Below a page rank of 0.20 there's no lift.
+- `f` is a concave ramp, steep early, so a moderately notable place (a museum, a bridge) is lifted most of the way and the very best known are still told apart.
+- Full notability takes 95% of the headroom, never all of it, so the base still orders records of equal notability.
+- `g` damps the lift for names many places share. `nc` is the largest count, across the build, of the item's normalized name. A chain's item sits on thousands of identically named stores, which would otherwise crowd into the overview band. Damping starts at 1,000 (Springfield has 513, Paris 429) and reaches zero at 10,000, below the largest chains (McDonald's 29,702, Starbucks 18,355), so they get no lift at all.
+
+The constants and the formulas are producer parameters, not protocol; another gazetteer could pick differently. The full reasoning is in the spec's [Importance](https://github.com/schuyler/garganorn/blob/main/docs/atgeo-spec.md#importance) section.
 
 ## Containment levels
 
@@ -429,7 +495,7 @@ The DID document's `id` is the same `did:web` as `describeService`'s `did`. It a
 | `InvalidRequest` | 400 | A required parameter is missing, a parameter doesn't fit its lexicon, the NSID is malformed, or a request body isn't valid JSON |
 | `UnsupportedMediaType` | 415 | A request body with a non-JSON `Content-Type` |
 | `MethodNotAllowed` | 405 | An HTTP method the route doesn't take, with an `Allow` header |
-| `MethodNotImplemented` | 501 | The NSID isn't one of the four methods the server implements, which includes every `com.atproto.*` method and a record lexicon such as `org.atgeo.place` |
+| `MethodNotImplemented` | 501 | The NSID isn't one of the five methods the server implements, which includes every `com.atproto.*` method and a record lexicon such as `org.atgeo.place` |
 
 **On the plain routes, a miss is HTTP 404** with a JSON body, never an HTML page:
 
@@ -452,12 +518,14 @@ The status differs from XRPC on purpose: XRPC follows the AT Protocol's 400-for-
 |----------|-----------------|
 | A tile (`/tiles/{slug}/...`) | `public, max-age=604800, immutable` |
 | `getTiles`, 200 only | `public, max-age=3600` |
+| `getPlace`, 200 only | `public, max-age=3600` |
+| `/{dataset}/{collection}/{id}`, 200 only | `public, max-age=3600` |
 | `describeService`, 200 only | `public, max-age=3600` |
-| Anything else | None set |
+| Anything else, `searchPlaces` included | None set |
 
-(A CORS preflight `OPTIONS` to `getTiles` or `describeService` is a 200 and carries the hour as well.)
+(A CORS preflight `OPTIONS` to `getTiles`, `getPlace`, `describeService` or `/{dataset}/{collection}/{id}` is a 200 and carries the hour as well.)
 
-Tile URLs are immutable, so tiles get a week. `getTiles` and `describeService` change when a new build lands, so they get an hour, and a client learns of a new build within an hour of asking.
+Tile URLs are immutable, so tiles get a week. `getTiles`, `getPlace` (and its plain-HTTP alias) and `describeService` change when a new build lands, so they get an hour, and a client learns of a new build within an hour of asking.
 
 Every response, errors and tiles included, carries `Access-Control-Allow-Origin: *`, so browser pages on any origin can read it. Every response also carries `X-Content-Type-Options: nosniff`, since error messages can echo the request path and a browser shouldn't be allowed to guess that one is HTML.
 
@@ -475,4 +543,4 @@ The tile's `attribution` array is where the notices live. A licence's duties att
 
 ## Use an SDK
 
-Everything above is the wire contract. You probably want a [client SDK](/sdk/) instead: it snaps your box, fetches and merges the tiles, dedupes, matches and ranks, and handles the overview and the failures. The [spec](https://github.com/schuyler/garganorn/blob/main/docs/atgeo-spec.md) remains the normative source for all of it.
+Everything above is the wire contract. You probably want a [client SDK](/sdk/) instead: it snaps your box, fetches and merges the tiles, dedupes, matches and ranks, and handles the overview and the failures. Its keyword methods call `searchPlaces`, with a whole-degree box when a region goes along, and say so in their names. The [spec](https://github.com/schuyler/garganorn/blob/main/docs/atgeo-spec.md) remains the normative source for all of it.

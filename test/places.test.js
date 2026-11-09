@@ -34,7 +34,7 @@ const bounds = (west, south, east, north) => ({
   getNorth() { return this._ne.lat; },
 });
 
-test('DATASETS offers the three served tilesets and maps to searchPlaces options', () => {
+test('DATASETS offers the three served tilesets and maps to searchNearby options', () => {
   assert.deepEqual(
     DATASETS.map((d) => d.id),
     ['overture-place', 'osm', 'overture-division'],
