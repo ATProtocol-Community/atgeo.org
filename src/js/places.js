@@ -1,5 +1,5 @@
-// Display helpers for the demos. Search itself is @atgeo/client's job; this module only
-// turns its hits into things a map and a list can show. No network, no DOM.
+// Display helpers for the demos: turns @atgeo/client hits into things a map and a list can show,
+// and widenSearch sequences the client's searches. No network of its own, no DOM.
 
 export const DATASETS = [
   { id: 'overture-place', label: 'Overture places', dataset: 'overturemaps.org', collection: 'place' },
@@ -7,7 +7,7 @@ export const DATASETS = [
   { id: 'overture-division', label: 'Overture divisions', dataset: 'overturemaps.org', collection: 'division' },
 ];
 
-// The dataset/collection options searchNearby takes for one of DATASETS.
+// The dataset/collection options the client's searches take for one of DATASETS.
 export function searchOptions(id) {
   const d = DATASETS.find((d) => d.id === id);
   if (!d) throw new TypeError(`unknown dataset choice: ${id}`);
@@ -189,6 +189,84 @@ export function placePoint(place, viewport) {
   }
 
   return null;
+}
+
+// A {lat, lon} to put a marker at for an SDK hit, or null. A bbox-only hit gets its raw centre,
+// marked approximate.
+export function hitMarkerPoint(hit) {
+  const { point, bbox } = hit.location;
+  if (point) return point;
+  if (!bbox) return null;
+  const east = bbox.east >= bbox.west ? bbox.east : bbox.east + 360;
+  return {
+    lat: (bbox.south + bbox.north) / 2,
+    lon: wrapLon((bbox.west + east) / 2),
+    approximate: true,
+  };
+}
+
+// [west, south, east, north] of an SDK hit (a point is a zero-size box), or null.
+export function hitBox(hit) {
+  const { point, bbox } = hit?.location ?? {};
+  if (point) return [point.lon, point.lat, point.lon, point.lat];
+  if (bbox) return [bbox.west, bbox.south, bbox.east, bbox.north];
+  return null;
+}
+
+// The smallest box covering the boxes (nulls ignored), or null for none. Crossing boxes are
+// unwrapped, and each box is shifted by a world to sit nearest those before it, so longitudes
+// may run past 180; MapLibre accepts that.
+export function boundsOf(boxes) {
+  let west = Infinity;
+  let east = -Infinity;
+  let south = Infinity;
+  let north = -Infinity;
+  for (const box of boxes) {
+    if (!box) continue;
+    const [w, s, e0, n] = box;
+    const e = e0 >= w ? e0 : e0 + 360;
+    let shift = 0;
+    if (west <= east) {
+      const centre = (west + east) / 2;
+      const offset = (w + e) / 2 - centre;
+      shift = -360 * Math.round(offset / 360);
+    }
+    west = Math.min(west, w + shift);
+    east = Math.max(east, e + shift);
+    south = Math.min(south, s);
+    north = Math.max(north, n);
+  }
+  return west > east ? null : [west, south, east, north];
+}
+
+// Search for text in widening stages, stopping at the first with hits: 1, the nearby search of
+// the region with expansion (the text stays in the browser); 2, a keyword search over the
+// viewport; 3, a keyword search of everything. Resolves to { stage, hits, result }, where result
+// is stage 1's answer or null if it threw BboxTooLarge, or to null once isStale() is true.
+export async function widenSearch({ atgeo, region, viewport, text, options, isStale }) {
+  let result = null;
+  try {
+    result = await atgeo.searchNearby({ region: { bbox: region }, text, expand: true, ...options });
+  } catch (err) {
+    if (err.code !== 'BboxTooLarge') throw err;
+  }
+  if (isStale()) return null;
+  // An overview answer is a sample, so an empty one proves nothing.
+  if (result?.places.length) return { stage: 1, hits: result.places, result };
+
+  let hits;
+  try {
+    ({ places: hits } = await atgeo.searchByKeyword({ keyword: text, region: { bbox: viewport }, ...options }));
+  } catch (err) {
+    if (err.code !== 'KeywordRequired') throw err;
+    return isStale() ? null : { stage: 2, hits: [], result };
+  }
+  if (isStale()) return null;
+  if (hits.length) return { stage: 2, hits, result };
+
+  ({ places: hits } = await atgeo.searchByKeyword({ keyword: text, ...options }));
+  if (isStale()) return null;
+  return { stage: 3, hits, result };
 }
 
 // Priority order of garganorn's OSM primary category (sql/_osm_category_case.sql).

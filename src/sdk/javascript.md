@@ -86,9 +86,10 @@ Every call that touches the network takes an optional `signal` (`AbortSignal`).
 | `collection` | Optional, e.g. `"way"`. |
 | `text` | Optional. Matched against `name` and `variants[].name`, on the device. |
 | `sort` | `"fused"` (default), `"distance"` or `"similarity"` (needs `text`). |
+| `expand` | Optional, default `false`. With `text`: if no place in `region` matches it word for word, look at everything the search's tiles hold. If that has such a match, `places` is that, ranked the same way, and `expanded` is `true`. `distance` is still measured from the region's centre. Nothing extra is fetched or sent. |
 | `signal` | Aborts the search. |
 
-The result is `{ places, complete, overview, tiles: { fetched, failed }, tileFailures, attribution, disclosed }`. Each hit in `places` is `{ via: "tiles", origin, collection, name, location, place, importance, distance, score }`; `origin`, `collection`, `name`, `importance` and `score` can be `null`. Each `tileFailures` entry is `{ url, kind, status?, error }`. `disclosed.keyword` is always `false` here.
+The result is `{ places, expanded, complete, overview, tiles: { fetched, failed }, tileFailures, attribution, disclosed }`. Each hit in `places` is `{ via: "tiles", origin, collection, name, location, place, importance, distance, score }`; `origin`, `collection`, `name`, `importance` and `score` can be `null`. Each `tileFailures` entry is `{ url, kind, status?, error }`. `disclosed.keyword` is always `false` here.
 
 ### `searchByKeyword(options): Promise<KeywordSearchResult>`
 
