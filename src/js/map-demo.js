@@ -1,8 +1,10 @@
-// Map demo: searches the gazetteer through @atgeo/client, entirely in the browser.
+// Map demo: searches the gazetteer through @atgeo/client. What you type stays in the browser
+// unless nothing matches nearby and a keyword search runs.
 
 import { createClient, AtgeoError, SERVER } from './client.js';
 import {
   DATASETS, searchOptions, placePoint, viewportBbox, xrpcURL, fitsBudget, findSearchableBox, boxNote,
+  hitMarkerPoint, hitBox, boundsOf, widenSearch,
 } from './places.js';
 
 const container = document.getElementById('map-demo');
@@ -65,7 +67,13 @@ if (container) {
     zoom: 13.5,
   });
 
+  const spinner = document.createElement('div');
+  spinner.className = 'map-spinner';
+  spinner.hidden = true;
+  container.appendChild(spinner);
+
   let markers = [];
+  let currentFit = [];
   let geolocating = false;
   let searchSeq = 0;
 
@@ -136,13 +144,9 @@ if (container) {
     document.dispatchEvent(new CustomEvent('place-selected', { detail: { hit, index } }));
   }
 
-  function fitToMarkers() {
-    // Bbox-derived points sit wherever the view was; fitting to them would only drift.
-    const exact = markers.filter((m) => !m.approximate);
-    if (exact.length === 0) return;
-    const bounds = new maplibregl.LngLatBounds();
-    exact.forEach((m) => bounds.extend(m.marker.getLngLat()));
-    map.fitBounds(bounds, { padding: 50, maxZoom: 17 });
+  function fitTo(boxes) {
+    const bounds = boundsOf(boxes);
+    if (bounds) map.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], { padding: 50, maxZoom: 17 });
   }
 
   async function doSearch() {
@@ -152,7 +156,9 @@ if (container) {
 
     clearError();
     clearMarkers();
+    currentFit = [];
     showSearchBox(null);
+    spinner.hidden = true;
     searchBtn.disabled = true;
     searchBtn.classList.add('loading');
     document.dispatchEvent(new CustomEvent('search-results', { detail: [] }));
@@ -160,7 +166,18 @@ if (container) {
     const viewport = viewportBbox(map.getBounds());
     let region = viewport;
     let box = null;
-    let result;
+    let outcome;
+    const client = {
+      searchNearby: (args) => atgeo.searchNearby(args),
+      searchByKeyword: async (args) => {
+        spinner.hidden = false;
+        try {
+          return await atgeo.searchByKeyword(args);
+        } finally {
+          if (seq === searchSeq) spinner.hidden = true;
+        }
+      },
+    };
     try {
       // Over the tile budget, the view gets a sample; a smaller box around its centre may get
       // everything instead. This picks one region to search, never several.
@@ -169,12 +186,16 @@ if (container) {
       }));
       if (seq !== searchSeq) return;
       if (box) region = box;
-      // searchNearby throws synchronously for a bad region; await inside try catches both.
-      result = await atgeo.searchNearby({
-        region: { bbox: region },
-        text: text || undefined,
-        ...options,
-      });
+      if (text) {
+        outcome = await widenSearch({
+          atgeo: client, region, viewport, text, options, isStale: () => seq !== searchSeq,
+        });
+        if (!outcome) return;
+      } else {
+        // searchNearby throws synchronously for a bad region; await inside try catches both.
+        const result = await atgeo.searchNearby({ region: { bbox: region }, ...options });
+        outcome = { stage: 1, hits: result.places, result };
+      }
     } catch (err) {
       if (seq !== searchSeq) return;
       if (err instanceof AtgeoError && err.code === 'BboxTooLarge') {
@@ -191,20 +212,26 @@ if (container) {
     }
     if (seq !== searchSeq) return;
 
-    const hits = result.places.slice(0, RESULT_LIMIT);
+    const { stage, result } = outcome;
+    const hits = outcome.hits.slice(0, RESULT_LIMIT);
+    const expanded = stage === 1 && result.expanded;
     const notes = [];
-    if (box) {
-      showSearchBox(box);
-      notes.push(boxNote(box));
+    if (stage === 1) {
+      if (box) {
+        showSearchBox(box);
+        notes.push(boxNote(box));
+      }
+      // An overview answer is a sample, so an empty one means "zoom in", not "nothing here".
+      if (result.overview) notes.push(hits.length ? 'Showing only the most important places here; zoom in for more' : 'Zoom in to search here');
+      if (!result.complete) notes.push(`${result.tiles.failed} of ${result.tiles.fetched + result.tiles.failed} tiles failed to load`);
+      if (hits.length === 0 && !result.overview) notes.push('No places found here');
+    } else if (hits.length === 0) {
+      notes.push('No places found');
     }
-    // An overview answer is a sample, so an empty one means "zoom in", not "nothing here".
-    if (result.overview) notes.push(hits.length ? 'Showing only the most important places here; zoom in for more' : 'Zoom in to search here');
-    if (!result.complete) notes.push(`${result.tiles.failed} of ${result.tiles.fetched + result.tiles.failed} tiles failed to load`);
-    if (hits.length === 0 && !result.overview) notes.push('No places found here');
     if (notes.length) showNote(notes.join('. '));
 
     hits.forEach((hit, i) => {
-      const point = placePoint(hit.place, region);
+      const point = stage === 1 && !expanded ? placePoint(hit.place, region) : hitMarkerPoint(hit);
       if (!point) return;
 
       const name = typeof hit.place.name === 'string' ? hit.place.name : '(unnamed)';
@@ -230,8 +257,19 @@ if (container) {
       markers.push({ marker, approximate: !!point.approximate, index: i, point });
     });
 
+    if (stage === 1 && !expanded) {
+      // Bbox-derived points sit wherever the view was; fitting to them would only drift.
+      currentFit = markers.filter((m) => !m.approximate).map((m) => [m.point.lon, m.point.lat, m.point.lon, m.point.lat]);
+    } else if (stage === 1) {
+      currentFit = [viewport, hitBox(hits[0])];
+    } else if (stage === 2) {
+      currentFit = hits.map(hitBox);
+    } else {
+      currentFit = [hitBox(hits[0])];
+    }
+
     document.dispatchEvent(new CustomEvent('search-results', { detail: hits }));
-    fitToMarkers();
+    fitTo(currentFit);
   }
 
   geolocateBtn.addEventListener('click', function () {
@@ -248,8 +286,7 @@ if (container) {
 
     clearError();
 
-    // The position only moves the map; searchNearby snaps whatever region it's given
-    // before anything leaves the browser.
+    // The position only moves the map; the search that follows is doSearch's.
     navigator.geolocation.getCurrentPosition(
       function onSuccess(position) {
         const lat = position.coords.latitude;
@@ -324,7 +361,7 @@ if (container) {
   });
 
   // Re-zoom to all results when navigating back
-  document.addEventListener('results-refocus', fitToMarkers);
+  document.addEventListener('results-refocus', () => fitTo(currentFit));
 
   map.on('click', (e) => {
     map.setCenter(e.lngLat);

@@ -13,6 +13,10 @@ import {
   xrpcURL,
   escapeHtml,
   highlightJson,
+  hitMarkerPoint,
+  hitBox,
+  boundsOf,
+  widenSearch,
 } from '../src/js/places.js';
 
 const fixture = (name) =>
@@ -288,4 +292,196 @@ test('escapeHtml and highlightJson never let markup through', () => {
   assert.ok(html.includes('<span class="json-key">&quot;name&quot;:</span>') || html.includes('<span class="json-key">"name":</span>'));
   assert.ok(html.includes('<span class="json-number">1</span>'));
   assert.ok(html.includes('<span class="json-bool">true</span>'));
+});
+
+// widenSearch / hit geometry
+
+const pointHit = (lat, lon) => ({ name: 'p', location: { point: { lat, lon }, bbox: null } });
+const bboxHit = (south, west, north, east) => ({
+  name: 'b',
+  location: { point: null, bbox: { south, west, north, east } },
+});
+
+test('hitMarkerPoint returns the point as is', () => {
+  assert.deepEqual(hitMarkerPoint(pointHit(37.7, -122.4)), { lat: 37.7, lon: -122.4 });
+});
+
+test('hitMarkerPoint centres a bbox and marks it approximate', () => {
+  assert.deepEqual(hitMarkerPoint(bboxHit(10, 20, 14, 30)), { lat: 12, lon: 25, approximate: true });
+});
+
+test('hitMarkerPoint centres a bbox crossing the antimeridian', () => {
+  assert.deepEqual(hitMarkerPoint(bboxHit(-18, 178, -16, -176)), { lat: -17, lon: -179, approximate: true });
+});
+
+test('hitMarkerPoint is null with neither point nor bbox', () => {
+  assert.equal(hitMarkerPoint({ name: null, location: { point: null, bbox: null } }), null);
+});
+
+test('hitBox treats a point as a zero-size box', () => {
+  assert.deepEqual(hitBox(pointHit(37.7, -122.4)), [-122.4, 37.7, -122.4, 37.7]);
+});
+
+test('hitBox returns a bbox as given', () => {
+  assert.deepEqual(hitBox(bboxHit(10, 20, 14, 30)), [20, 10, 30, 14]);
+});
+
+test('hitBox keeps a crossing bbox as given', () => {
+  assert.deepEqual(hitBox(bboxHit(-18, 178, -16, -176)), [178, -18, -176, -16]);
+});
+
+test('hitBox is null for undefined or neither point nor bbox', () => {
+  assert.equal(hitBox(undefined), null);
+  assert.equal(hitBox({ name: null, location: { point: null, bbox: null } }), null);
+});
+
+test('boundsOf covers two boxes', () => {
+  assert.deepEqual(boundsOf([[0, 0, 10, 10], [5, -5, 20, 8]]), [0, -5, 20, 10]);
+});
+
+test('boundsOf keeps boxes either side of the antimeridian narrow', () => {
+  assert.deepEqual(boundsOf([[179, 0, 179.5, 1], [-179.5, 0, -179, 1]]), [179, 0, 181, 1]);
+});
+
+test('boundsOf keeps a crossing viewport plus a hit box east of it narrow', () => {
+  assert.deepEqual(
+    boundsOf([[178, -18, -179.5, -17], [-178, -17.8, -177.9, -17.7]]),
+    [178, -18, 182.1, -17],
+  );
+});
+
+test('boundsOf ignores nulls', () => {
+  assert.deepEqual(boundsOf([null, [1, 2, 3, 4], null]), [1, 2, 3, 4]);
+});
+
+test('boundsOf of nothing is null', () => {
+  assert.equal(boundsOf([]), null);
+});
+
+const REGION = [-122.5, 37.7, -122.4, 37.8];
+const VIEWPORT = [-123, 37, -122, 38];
+const OPTIONS = { dataset: 'overture.places' };
+const HIT = pointHit(37.77, -122.43);
+
+const fakeClient = (script) => {
+  const calls = [];
+  const step = (name) => async (args) => {
+    calls.push([name, args]);
+    const next = script[name].shift();
+    if (next instanceof Error) throw next;
+    return next;
+  };
+  return {
+    calls,
+    searchNearby: step('searchNearby'),
+    searchByKeyword: step('searchByKeyword'),
+  };
+};
+const failure = (code) => Object.assign(new Error(code), { code });
+const keyword = (places) => ({ places });
+const nearby = (places, extra = {}) => ({ places, overview: false, expanded: false, ...extra });
+const widen = (client, extra = {}) =>
+  widenSearch({
+    atgeo: client,
+    region: REGION,
+    viewport: VIEWPORT,
+    text: 'alamo',
+    options: OPTIONS,
+    isStale: () => false,
+    ...extra,
+  });
+
+test('widenSearch stage 1 sends expand, text, the region bbox and options', async () => {
+  const client = fakeClient({ searchNearby: [nearby([HIT])] });
+  await widen(client);
+  assert.deepEqual(client.calls, [
+    ['searchNearby', { region: { bbox: REGION }, text: 'alamo', expand: true, ...OPTIONS }],
+  ]);
+});
+
+test('widenSearch stops at stage 1 on hits', async () => {
+  const result = nearby([HIT]);
+  const client = fakeClient({ searchNearby: [result] });
+  const outcome = await widen(client);
+  assert.deepEqual(outcome, { stage: 1, hits: [HIT], result });
+  assert.equal(client.calls.length, 1);
+});
+
+test('widenSearch falls to stage 2 with the viewport bbox and stops on hits', async () => {
+  const client = fakeClient({ searchNearby: [nearby([])], searchByKeyword: [keyword([HIT])] });
+  const outcome = await widen(client);
+  assert.equal(outcome.stage, 2);
+  assert.deepEqual(outcome.hits, [HIT]);
+  assert.deepEqual(client.calls[1], [
+    'searchByKeyword',
+    { keyword: 'alamo', region: { bbox: VIEWPORT }, ...OPTIONS },
+  ]);
+  assert.equal(client.calls.length, 2);
+});
+
+test('widenSearch falls to stage 3 with no region when stage 2 is empty', async () => {
+  const client = fakeClient({ searchNearby: [nearby([])], searchByKeyword: [keyword([]), keyword([HIT])] });
+  const outcome = await widen(client);
+  assert.equal(outcome.stage, 3);
+  assert.deepEqual(outcome.hits, [HIT]);
+  assert.deepEqual(client.calls[2], ['searchByKeyword', { keyword: 'alamo', ...OPTIONS }]);
+  assert.equal(client.calls.length, 3);
+});
+
+test('widenSearch falls through an empty overview result', async () => {
+  const client = fakeClient({
+    searchNearby: [nearby([], { overview: true })],
+    searchByKeyword: [keyword([HIT])],
+  });
+  const outcome = await widen(client);
+  assert.equal(outcome.stage, 2);
+});
+
+test('widenSearch falls through BboxTooLarge with a null result', async () => {
+  const client = fakeClient({ searchNearby: [failure('BboxTooLarge')], searchByKeyword: [keyword([HIT])] });
+  const outcome = await widen(client);
+  assert.equal(outcome.stage, 2);
+  assert.equal(outcome.result, null);
+});
+
+test('widenSearch propagates another stage 1 error', async () => {
+  const client = fakeClient({ searchNearby: [failure('Boom')] });
+  await assert.rejects(widen(client), { code: 'Boom' });
+});
+
+test('widenSearch ends at stage 2 on KeywordRequired without calling stage 3', async () => {
+  const client = fakeClient({ searchNearby: [nearby([])], searchByKeyword: [failure('KeywordRequired')] });
+  const outcome = await widen(client);
+  assert.equal(outcome.stage, 2);
+  assert.deepEqual(outcome.hits, []);
+  assert.equal(client.calls.length, 2);
+});
+
+test('widenSearch propagates another stage 2 error', async () => {
+  const client = fakeClient({ searchNearby: [nearby([])], searchByKeyword: [failure('Boom')] });
+  await assert.rejects(widen(client), { code: 'Boom' });
+});
+
+test('widenSearch returns null when stale after stage 1, with no further calls', async () => {
+  const client = fakeClient({ searchNearby: [nearby([])], searchByKeyword: [keyword([HIT])] });
+  assert.equal(await widen(client, { isStale: () => true }), null);
+  assert.equal(client.calls.length, 1);
+});
+
+test('widenSearch returns null when stale after stage 2, with no further calls', async () => {
+  const client = fakeClient({ searchNearby: [nearby([])], searchByKeyword: [keyword([]), keyword([HIT])] });
+  let awaited = 0;
+  const wrapped = {
+    searchNearby: async (a) => { awaited++; return client.searchNearby(a); },
+    searchByKeyword: async (a) => { awaited++; return client.searchByKeyword(a); },
+  };
+  assert.equal(await widen(wrapped, { isStale: () => awaited >= 2 }), null);
+  assert.equal(client.calls.length, 2);
+});
+
+test('widenSearch returns an expanded result as stage 1', async () => {
+  const result = nearby([HIT], { expanded: true });
+  const outcome = await widen(fakeClient({ searchNearby: [result] }));
+  assert.equal(outcome.stage, 1);
+  assert.equal(outcome.result, result);
 });

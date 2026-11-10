@@ -8,6 +8,6 @@
   },
   "devDependencies": {
     "@11ty/eleventy": "^3.0.0",
-    "@atgeo/client": "github:schuyler/atgeo-sdk-js#fc5633103e5ef195c1f9e6e96213e33ce56058ad"
+    "@atgeo/client": "github:schuyler/atgeo-sdk-js#7ce7add1dd39b470b29f0f67633a680ff1a2967e"
   }
 }
