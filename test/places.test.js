@@ -13,6 +13,10 @@ import {
   xrpcURL,
   escapeHtml,
   highlightJson,
+  hitMarkerPoint,
+  hitBox,
+  boundsOf,
+  widenSearch,
 } from '../src/js/places.js';
 
 const fixture = (name) =>
@@ -34,7 +38,7 @@ const bounds = (west, south, east, north) => ({
   getNorth() { return this._ne.lat; },
 });
 
-test('DATASETS offers the three served tilesets and maps to searchPlaces options', () => {
+test('DATASETS offers the three served tilesets and maps to searchNearby options', () => {
   assert.deepEqual(
     DATASETS.map((d) => d.id),
     ['overture-place', 'osm', 'overture-division'],
@@ -281,4 +285,187 @@ test('escapeHtml and highlightJson never let markup through', () => {
   assert.ok(html.includes('<span class="json-key">&quot;name&quot;:</span>') || html.includes('<span class="json-key">"name":</span>'));
   assert.ok(html.includes('<span class="json-number">1</span>'));
   assert.ok(html.includes('<span class="json-bool">true</span>'));
+});
+
+const pointHit = (lat, lon) => ({ place: {}, name: 'p', location: { point: { lat, lon }, bbox: null } });
+const bboxHit = (west, south, east, north) => ({ place: {}, name: 'b', location: { point: null, bbox: { south, west, north, east } } });
+const bareHit = { place: {}, name: null, location: { point: null, bbox: null } };
+
+test('hitMarkerPoint uses the point as is', () => {
+  assert.deepEqual(hitMarkerPoint(pointHit(39.95, -75.16)), { lat: 39.95, lon: -75.16 });
+});
+
+test('hitMarkerPoint centres a bbox and marks it approximate', () => {
+  assert.deepEqual(hitMarkerPoint(bboxHit(10, 20, 14, 30)), { lat: 25, lon: 12, approximate: true });
+});
+
+test('hitMarkerPoint centres a crossing bbox on the antimeridian side', () => {
+  assert.deepEqual(hitMarkerPoint(bboxHit(179, -19, -177, -17)), { lat: -18, lon: -179, approximate: true });
+});
+
+test('hitMarkerPoint is null with neither point nor bbox', () => {
+  assert.equal(hitMarkerPoint(bareHit), null);
+});
+
+test('hitBox makes a point a zero-size box', () => {
+  assert.deepEqual(hitBox(pointHit(39.95, -75.16)), [-75.16, 39.95, -75.16, 39.95]);
+});
+
+test('hitBox returns a bbox as given, crossing included', () => {
+  assert.deepEqual(hitBox(bboxHit(10, 20, 14, 30)), [10, 20, 14, 30]);
+  assert.deepEqual(hitBox(bboxHit(179, -19, -177, -17)), [179, -19, -177, -17]);
+});
+
+test('hitBox is null for undefined and for a hit with neither point nor bbox', () => {
+  assert.equal(hitBox(undefined), null);
+  assert.equal(hitBox(bareHit), null);
+});
+
+test('boundsOf covers two boxes', () => {
+  assert.deepEqual(boundsOf([[0, 0, 1, 1], [2, 2, 3, 3]]), [0, 0, 3, 3]);
+});
+
+test('boundsOf keeps boxes either side of the antimeridian narrow', () => {
+  assert.deepEqual(boundsOf([[179, 0, 179.5, 1], [-179.5, 0, -179, 1]]), [179, 0, 181, 1]);
+});
+
+test('boundsOf unwraps a crossing viewport and keeps a hit box east of it narrow', () => {
+  assert.deepEqual(
+    boundsOf([[178, -18, -179.5, -17], [-179, -17.5, -178.5, -17.2]]),
+    [178, -18, 181.5, -17],
+  );
+});
+
+test('boundsOf ignores null entries and returns null for none', () => {
+  assert.deepEqual(boundsOf([null, [0, 0, 1, 1], null]), [0, 0, 1, 1]);
+  assert.equal(boundsOf([]), null);
+  assert.equal(boundsOf([null]), null);
+});
+
+const fakeAtgeo = ({ nearby, keyword }) => {
+  const calls = [];
+  return {
+    calls,
+    searchNearby: async (args) => {
+      calls.push(['searchNearby', args]);
+      return nearby(args);
+    },
+    searchByKeyword: async (args) => {
+      calls.push(['searchByKeyword', args]);
+      return keyword(args);
+    },
+  };
+};
+const failing = (code) => () => { throw Object.assign(new Error('x'), { code }); };
+
+const VIEW = [-122.45, 37.76, -122.43, 37.78];
+const OPTS = { dataset: 'overturemaps.org', collection: 'place' };
+const HIT_A = pointHit(37.77, -122.44);
+const HIT_B = pointHit(37.7, -122.4);
+const search = (atgeo, extra = {}) =>
+  widenSearch({
+    atgeo, viewport: VIEW, text: 'alamo', options: OPTS, isStale: () => false, keywordFallback: true, ...extra,
+  });
+
+test('widenSearch stage 1 hits stop the ladder and stage 1 gets expand, text, bbox and options', async () => {
+  const result = { places: [HIT_A], expanded: false };
+  const atgeo = fakeAtgeo({ nearby: () => result, keyword: failing('unused') });
+  const out = await search(atgeo);
+  assert.deepEqual(atgeo.calls, [
+    ['searchNearby', { region: { bbox: VIEW }, text: 'alamo', expand: true, ...OPTS }],
+  ]);
+  assert.equal(out.stage, 1);
+  assert.deepEqual(out.hits, [HIT_A]);
+  assert.equal(out.result, result);
+});
+
+test('widenSearch returns an expanded result as stage 1', async () => {
+  const result = { places: [HIT_B], expanded: true };
+  const atgeo = fakeAtgeo({ nearby: () => result, keyword: failing('unused') });
+  const out = await search(atgeo);
+  assert.equal(out.stage, 1);
+  assert.equal(out.result.expanded, true);
+  assert.deepEqual(out.hits, [HIT_B]);
+  assert.equal(atgeo.calls.length, 1);
+});
+
+test('widenSearch falls from an empty stage 1 to stage 2 with the viewport and stops on hits', async () => {
+  const result = { places: [], expanded: false };
+  const atgeo = fakeAtgeo({ nearby: () => result, keyword: () => ({ places: [HIT_A, HIT_B] }) });
+  const out = await search(atgeo);
+  assert.deepEqual(atgeo.calls[1], ['searchByKeyword', { keyword: 'alamo', region: { bbox: VIEW }, ...OPTS }]);
+  assert.equal(atgeo.calls.length, 2);
+  assert.equal(out.stage, 2);
+  assert.deepEqual(out.hits, [HIT_A, HIT_B]);
+  assert.equal(out.result, result);
+});
+
+test('widenSearch falls from an empty stage 2 to stage 3 with no region', async () => {
+  const atgeo = fakeAtgeo({
+    nearby: () => ({ places: [] }),
+    keyword: (args) => ({ places: args.region ? [] : [HIT_B] }),
+  });
+  const out = await search(atgeo);
+  assert.deepEqual(atgeo.calls[2], ['searchByKeyword', { keyword: 'alamo', ...OPTS }]);
+  assert.equal(atgeo.calls.length, 3);
+  assert.equal(out.stage, 3);
+  assert.deepEqual(out.hits, [HIT_B]);
+});
+
+test('widenSearch returns stage 3 with no hits when every stage is empty', async () => {
+  const atgeo = fakeAtgeo({ nearby: () => ({ places: [] }), keyword: () => ({ places: [] }) });
+  const out = await search(atgeo);
+  assert.equal(out.stage, 3);
+  assert.deepEqual(out.hits, []);
+});
+
+test('widenSearch treats BboxTooLarge from stage 1 as empty, with result null', async () => {
+  const atgeo = fakeAtgeo({ nearby: failing('BboxTooLarge'), keyword: () => ({ places: [HIT_A] }) });
+  const out = await search(atgeo);
+  assert.equal(out.stage, 2);
+  assert.equal(out.result, null);
+  assert.deepEqual(out.hits, [HIT_A]);
+});
+
+test('widenSearch propagates any other stage 1 error', async () => {
+  const atgeo = fakeAtgeo({ nearby: failing('Boom'), keyword: () => ({ places: [HIT_A] }) });
+  await assert.rejects(search(atgeo), { code: 'Boom' });
+  assert.equal(atgeo.calls.length, 1);
+});
+
+test('widenSearch ends at stage 2 with no hits on KeywordRequired', async () => {
+  const atgeo = fakeAtgeo({ nearby: () => ({ places: [] }), keyword: failing('KeywordRequired') });
+  const out = await search(atgeo, { text: 'a' });
+  assert.equal(out.stage, 2);
+  assert.deepEqual(out.hits, []);
+  assert.equal(atgeo.calls.length, 2);
+});
+
+test('widenSearch returns null when stale after stage 1', async () => {
+  const atgeo = fakeAtgeo({ nearby: () => ({ places: [] }), keyword: () => ({ places: [HIT_A] }) });
+  assert.equal(await search(atgeo, { isStale: () => true }), null);
+  assert.equal(atgeo.calls.length, 1);
+});
+
+test('widenSearch returns null when stale after stage 2', async () => {
+  const atgeo = fakeAtgeo({ nearby: () => ({ places: [] }), keyword: () => ({ places: [] }) });
+  let n = 0;
+  assert.equal(await search(atgeo, { isStale: () => ++n >= 2 }), null);
+  assert.equal(atgeo.calls.length, 2);
+});
+
+test('widenSearch without keywordFallback stops after an empty stage 1', async () => {
+  const result = { places: [] };
+  const atgeo = fakeAtgeo({ nearby: () => result, keyword: () => ({ places: [HIT_A] }) });
+  const out = await search(atgeo, { keywordFallback: false });
+  assert.equal(atgeo.calls.length, 1);
+  assert.equal(out.stage, 1);
+  assert.deepEqual(out.hits, []);
+  assert.equal(out.result, result);
+});
+
+test('widenSearch without keywordFallback rethrows BboxTooLarge', async () => {
+  const atgeo = fakeAtgeo({ nearby: failing('BboxTooLarge'), keyword: () => ({ places: [HIT_A] }) });
+  await assert.rejects(search(atgeo, { keywordFallback: false }), { code: 'BboxTooLarge' });
+  assert.equal(atgeo.calls.length, 1);
 });

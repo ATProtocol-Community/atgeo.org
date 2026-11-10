@@ -157,7 +157,7 @@ function runSearch() {
     const bbox = parseBbox($('qd-bbox').value);
     const log = [];
     const atgeo = createClient({ onResponse: (entry) => log.push(entry) });
-    const result = await atgeo.searchPlaces({ region: { bbox }, text: text || undefined, ...searchOptions(datasetId) });
+    const result = await atgeo.searchNearby({ region: { bbox }, text: text || undefined, ...searchOptions(datasetId) });
 
     const parts = [];
 

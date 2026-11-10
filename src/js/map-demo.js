@@ -1,7 +1,10 @@
-// Map demo: searches the gazetteer through @atgeo/client, entirely in the browser.
+// Map demo: searches the gazetteer through @atgeo/client. Text stays in the browser unless
+// the tile search finds nothing and the search widens to the server's keyword search.
 
 import { createClient, AtgeoError } from './client.js';
-import { DATASETS, searchOptions, placePoint, viewportBbox } from './places.js';
+import {
+  DATASETS, searchOptions, placePoint, viewportBbox, hitMarkerPoint, hitBox, boundsOf, widenSearch,
+} from './places.js';
 
 const container = document.getElementById('map-demo');
 
@@ -63,6 +66,7 @@ if (container) {
   });
 
   let markers = [];
+  let currentFit = [];
   let geolocating = false;
   let searchSeq = 0;
 
@@ -92,16 +96,12 @@ if (container) {
     document.dispatchEvent(new CustomEvent('place-selected', { detail: { hit, index } }));
   }
 
-  function fitToMarkers() {
-    // Bbox-derived points sit wherever the view was; fitting to them would only drift.
-    const exact = markers.filter((m) => !m.approximate);
-    if (exact.length === 0) return;
-    const bounds = new maplibregl.LngLatBounds();
-    exact.forEach((m) => bounds.extend(m.marker.getLngLat()));
-    map.fitBounds(bounds, { padding: 50, maxZoom: 17 });
+  function fitTo(boxes) {
+    const b = boundsOf(boxes);
+    if (b) map.fitBounds([[b[0], b[1]], [b[2], b[3]]], { padding: 50, maxZoom: 17 });
   }
 
-  async function doSearch() {
+  async function doSearch({ keywordFallback = true } = {}) {
     const text = queryInput.value.trim();
     const seq = ++searchSeq;
 
@@ -112,14 +112,25 @@ if (container) {
     document.dispatchEvent(new CustomEvent('search-results', { detail: [] }));
 
     const viewport = viewportBbox(map.getBounds());
-    let result;
+    let outcome;
     try {
-      // searchPlaces throws synchronously for a bad region; await inside try catches both.
-      result = await atgeo.searchPlaces({
-        region: { bbox: viewport },
-        text: text || undefined,
-        ...searchOptions(datasetSelect.value),
-      });
+      // searchNearby throws synchronously for a bad region; await inside try catches both.
+      if (text) {
+        outcome = await widenSearch({
+          atgeo,
+          viewport,
+          text,
+          options: searchOptions(datasetSelect.value),
+          isStale: () => seq !== searchSeq,
+          keywordFallback,
+        });
+      } else {
+        const result = await atgeo.searchNearby({
+          region: { bbox: viewport },
+          ...searchOptions(datasetSelect.value),
+        });
+        outcome = { stage: 1, hits: result.places, result };
+      }
     } catch (err) {
       if (seq !== searchSeq) return;
       if (err instanceof AtgeoError && err.code === 'BboxTooLarge') {
@@ -136,15 +147,22 @@ if (container) {
     }
     if (seq !== searchSeq) return;
 
-    const hits = result.places.slice(0, RESULT_LIMIT);
+    const { stage, result } = outcome;
+    const hits = outcome.hits.slice(0, RESULT_LIMIT);
+    const expanded = stage === 1 && !!result?.expanded;
+    const widened = stage > 1 || expanded;
     const notes = [];
-    if (result.overview) notes.push('Showing only the most important places here; zoom in for more');
-    if (!result.complete) notes.push(`${result.tiles.failed} of ${result.tiles.fetched + result.tiles.failed} tiles failed to load`);
-    if (hits.length === 0) notes.push('No places found here');
+    if (expanded) notes.push('Nothing here matched; showing the closest match from nearby tiles');
+    if (stage > 1) {
+      notes.push(`Not found nearby; searched the server for '${text}' (${stage === 2 ? 'about a degree' : 'the whole world'})`);
+    }
+    if (stage === 1 && result?.overview) notes.push('Showing only the most important places here; zoom in for more');
+    if (result && !result.complete) notes.push(`${result.tiles.failed} of ${result.tiles.fetched + result.tiles.failed} tiles failed to load`);
+    if (hits.length === 0) notes.push(stage > 1 ? 'No places found' : 'No places found here');
     if (notes.length) showNote(notes.join('. '));
 
     hits.forEach((hit, i) => {
-      const point = placePoint(hit.place, viewport);
+      const point = widened ? hitMarkerPoint(hit) : placePoint(hit.place, viewport);
       if (!point) return;
 
       const name = typeof hit.place.name === 'string' ? hit.place.name : '(unnamed)';
@@ -171,7 +189,17 @@ if (container) {
     });
 
     document.dispatchEvent(new CustomEvent('search-results', { detail: hits }));
-    fitToMarkers();
+    if (expanded) {
+      currentFit = [viewport, hitBox(hits[0])];
+    } else if (stage === 2) {
+      currentFit = hits.map(hitBox);
+    } else if (stage === 3) {
+      currentFit = [hitBox(hits[0])];
+    } else {
+      // Bbox-derived points sit wherever the view was; fitting to them would only drift.
+      currentFit = markers.filter((m) => !m.approximate).map((m) => [m.point.lon, m.point.lat, m.point.lon, m.point.lat]);
+    }
+    fitTo(currentFit);
   }
 
   geolocateBtn.addEventListener('click', function () {
@@ -188,7 +216,7 @@ if (container) {
 
     clearError();
 
-    // The position only moves the map; searchPlaces snaps whatever region it's given
+    // The position only moves the map; searchNearby snaps whatever region it's given
     // before anything leaves the browser.
     navigator.geolocation.getCurrentPosition(
       function onSuccess(position) {
@@ -230,7 +258,7 @@ if (container) {
     );
   });
 
-  searchBtn.addEventListener('click', doSearch);
+  searchBtn.addEventListener('click', () => doSearch());
   queryInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') doSearch();
   });
@@ -264,10 +292,10 @@ if (container) {
   });
 
   // Re-zoom to all results when navigating back
-  document.addEventListener('results-refocus', fitToMarkers);
+  document.addEventListener('results-refocus', () => fitTo(currentFit));
 
   map.on('click', (e) => {
     map.setCenter(e.lngLat);
-    if (queryInput.value.trim()) doSearch();
+    if (queryInput.value.trim()) doSearch({ keywordFallback: false });
   });
 }

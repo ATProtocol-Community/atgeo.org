@@ -1,5 +1,6 @@
 // Display helpers for the demos. Search itself is @atgeo/client's job; this module only
-// turns its hits into things a map and a list can show. No network, no DOM.
+// turns its hits into things a map and a list can show, and widenSearch sequences the
+// client's calls. No network of its own, no DOM.
 
 export const DATASETS = [
   { id: 'overture-place', label: 'Overture places', dataset: 'overturemaps.org', collection: 'place' },
@@ -7,7 +8,7 @@ export const DATASETS = [
   { id: 'overture-division', label: 'Overture divisions', dataset: 'overturemaps.org', collection: 'division' },
 ];
 
-// The dataset/collection options searchPlaces takes for one of DATASETS.
+// The dataset/collection options searchNearby takes for one of DATASETS.
 export function searchOptions(id) {
   const d = DATASETS.find((d) => d.id === id);
   if (!d) throw new TypeError(`unknown dataset choice: ${id}`);
@@ -90,6 +91,70 @@ export function placePoint(place, viewport) {
   }
 
   return null;
+}
+
+export function hitMarkerPoint(hit) {
+  const { point, bbox } = hit.location;
+  if (point) return point;
+  if (!bbox) return null;
+  const east = bbox.east >= bbox.west ? bbox.east : bbox.east + 360;
+  return { lat: (bbox.south + bbox.north) / 2, lon: wrapLon((bbox.west + east) / 2), approximate: true };
+}
+
+// [west, south, east, north] covering a hit, or null. A bbox with west > east crosses the
+// antimeridian.
+export function hitBox(hit) {
+  const loc = hit?.location;
+  if (loc?.point) return [loc.point.lon, loc.point.lat, loc.point.lon, loc.point.lat];
+  if (loc?.bbox) return [loc.bbox.west, loc.bbox.south, loc.bbox.east, loc.bbox.north];
+  return null;
+}
+
+// The smallest [west, south, east, north] covering all the boxes, or null for none. Each
+// box after the first is shifted by a whole world to sit nearest the running box, so a
+// cluster either side of the antimeridian stays small; the result's east may pass 180.
+export function boundsOf(boxes) {
+  let acc = null;
+  for (const box of boxes) {
+    if (!box) continue;
+    const [w, s, e0, n] = box;
+    const e = e0 >= w ? e0 : e0 + 360;
+    if (!acc) {
+      acc = [w, s, e, n];
+      continue;
+    }
+    const gap = (shift) => Math.abs((w + e) / 2 + shift - (acc[0] + acc[2]) / 2);
+    const shift = [-360, 0, 360].reduce((best, x) => (gap(x) < gap(best) ? x : best));
+    acc = [Math.min(acc[0], w + shift), Math.min(acc[1], s), Math.max(acc[2], e + shift), Math.max(acc[3], n)];
+  }
+  return acc;
+}
+
+// Stages 2 and 3 send the text to the server. `result` is stage 1's result, null if stage 1
+// threw BboxTooLarge. Returns null once isStale() says a newer search superseded this one.
+export async function widenSearch({ atgeo, viewport, text, options, isStale, keywordFallback }) {
+  let result = null;
+  try {
+    result = await atgeo.searchNearby({ region: { bbox: viewport }, text, expand: true, ...options });
+  } catch (err) {
+    if (err?.code !== 'BboxTooLarge' || !keywordFallback) throw err;
+  }
+  if (isStale()) return null;
+  if (result?.places.length > 0 || !keywordFallback) return { stage: 1, hits: result.places, result };
+
+  let nearby;
+  try {
+    nearby = await atgeo.searchByKeyword({ keyword: text, region: { bbox: viewport }, ...options });
+  } catch (err) {
+    if (err?.code !== 'KeywordRequired') throw err;
+    return isStale() ? null : { stage: 2, hits: [], result };
+  }
+  if (isStale()) return null;
+  if (nearby.places.length > 0) return { stage: 2, hits: nearby.places, result };
+
+  const world = await atgeo.searchByKeyword({ keyword: text, ...options });
+  if (isStale()) return null;
+  return { stage: 3, hits: world.places, result };
 }
 
 // Priority order of garganorn's OSM primary category (sql/_osm_category_case.sql).

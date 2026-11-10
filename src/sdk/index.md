@@ -6,7 +6,7 @@ permalink: /sdk/
 
 # Client SDKs
 
-The ATGeo client SDKs search places on the device, so the server never learns what you searched for or where you are, exactly.
+The ATGeo client SDKs search places on the device, so the server never learns what you searched for or where you are, exactly. The exception is the JavaScript SDK's keyword calls (the ones with `Keyword` in their names, such as `searchByKeyword`), which send a keyword to the server.
 
 The [home page](/) map runs on the JavaScript SDK. There are five SDKs: JavaScript/TypeScript (the reference), Swift, Kotlin, Python and Rust. All of them are pre-release.
 
@@ -16,14 +16,15 @@ The [XRPC API](/api/) has no search endpoint, on purpose. A server that can sear
 
 That's a fair bit of work: snapping regions to a grid, fetching tiles eight at a time, de-duplicating, fuzzy matching, ranking, caching. The SDKs do it for you, and they give you two main calls:
 
-- `searchPlaces` finds places in a region, optionally matching some text.
+- `searchPlaces` finds places in a region, optionally matching some text. In JavaScript it's called `searchNearby`.
 - `getPlace` fetches one place by its `origin`.
 
 Plus two pass-throughs for finding out what a server holds: `describeService` and `describeTileset`.
 
 | What you call | What happens on the wire |
 |---|---|
-| `searchPlaces` | `org.atgeo.getTiles`, then one GET per tile |
+| `searchPlaces` (JavaScript: `searchNearby`) | `org.atgeo.getTiles`, then one GET per tile |
+| `searchByKeyword` (JavaScript only) | `org.atgeo.searchPlaces`, carrying your keyword |
 | `getPlace` | nothing if the tile is cached, else `org.atgeo.getPlace` |
 | `describeService` | `org.atgeo.describeService` (cached for an hour) |
 | `describeTileset` | `org.atgeo.describeTileset` (not cached) |
@@ -32,9 +33,9 @@ The client does no quadkey math. Tile URLs are opaque; the server works out whic
 
 ## The five SDKs
 
-| Language | Repository | Runs on | `searchPlaces` | `getPlace` | `describeService` | `describeTileset` |
+| Language | Repository | Runs on | search call | `getPlace` | `describeService` | `describeTileset` |
 |---|---|---|---|---|---|---|
-| [JavaScript / TypeScript](/sdk/javascript/) | [atgeo-sdk-js](https://github.com/schuyler/atgeo-sdk-js) | Evergreen browsers, Node 20+, workers | `searchPlaces` | `getPlace` | `describeService` | `describeTileset` |
+| [JavaScript / TypeScript](/sdk/javascript/) | [atgeo-sdk-js](https://github.com/schuyler/atgeo-sdk-js) | Evergreen browsers, Node 20+, workers | `searchNearby` | `getPlace` | `describeService` | `describeTileset` |
 | [Swift](/sdk/swift/) | [atgeo-sdk-swift](https://github.com/schuyler/atgeo-sdk-swift) | iOS 15, macOS 12, tvOS 15, watchOS 8, visionOS 1, Linux; Swift 6 | `searchPlaces` | `place(origin:)` | `describeService` | `describeTileset` |
 | [Kotlin](/sdk/kotlin/) | [atgeo-sdk-kotlin](https://github.com/schuyler/atgeo-sdk-kotlin) | JVM 11+, Android API 24+ | `searchPlaces` | `getPlace` | `describeService` | `describeTileset` |
 | [Python](/sdk/python/) | [atgeo-sdk-python](https://github.com/schuyler/atgeo-sdk-python) | Python 3.11+ | `search_places` | `get_place` | `describe_service` | `describe_tileset` |
@@ -52,27 +53,27 @@ A search covers one dataset, optionally narrowed to a collection:
 
 | `dataset` | `collection` | What is searched |
 |---|---|---|
-| absent | absent | `overturemaps.org` / `place` |
-| absent | given | `overturemaps.org` / that collection |
+| absent | absent | `overturemaps.org` / `place` (not in JavaScript) |
+| absent | given | `overturemaps.org` / that collection (not in JavaScript) |
 | given | absent | the whole dataset, every collection together |
 | given | given | that collection |
 
-So the default is Overture places. `dataset: "openstreetmap.org"` alone returns nodes, ways and relations in one list, which is usually what you want from OSM, since the element type is an accident of how the mapper drew it. A collection-filtered search keeps only records whose `origin` starts with `urn:atgeo:{dataset}:{collection}:`.
+So, outside JavaScript, the default is Overture places. JavaScript has no default: `dataset` is required, and a call without it throws a `TypeError`. `dataset: "openstreetmap.org"` alone returns nodes, ways and relations in one list, which is usually what you want from OSM, since the element type is an accident of how the mapper drew it. A collection-filtered search keeps only records whose `origin` starts with `urn:atgeo:{dataset}:{collection}:`.
 
 There is no merged ranking across datasets. `importance` is only comparable within a tileset: an Overture place scoring 62 and an OSM place scoring 62 aren't equally important. If you want both, make two calls and decide how to interleave them. See [Overture Places](/overture/), [Overture Divisions](/divisions/) and [OpenStreetMap](/osm/) for what each dataset holds.
 
 ## Regions
 
-A region is required, and it's one of:
+A region is required, and it's one of the following. (The exception is the JavaScript SDK's keyword calls, such as `searchByKeyword`, where it's optional and only a bounding box: it's snapped outward to whole degrees before it's sent, and with no region the whole world is searched.)
 
 - a **circle**: centre latitude and longitude, plus a radius in meters;
 - a **bounding box**: `[minLon, minLat, maxLon, maxLat]` in degrees.
 
 A box with `minLon > maxLon` crosses the antimeridian. The client sends two `getTiles` calls, one for each side, and merges the tiles. Invalid regions (non-finite or out-of-range coordinates, `minLat > maxLat`, a negative radius) are rejected before any request.
 
-Results are filtered back to *your* region, not the snapped one: a point place is kept if it's inside, a place with only a bounding box is kept if the box touches the region, and a circle means the circle, not its enclosing square. A tight region in a sparse area can come back empty even though the client holds good places a couple of kilometers off. That's a feature of predictability, but watch for it in testing.
+Results are filtered back to *your* region, not the snapped one (except that JavaScript's keyword calls never filter by region, so their hits can lie anywhere in the whole-degree box, and a `searchNearby` with `expanded: true` returns places from the whole tile coverage): a point place is kept if it's inside, a place with only a bounding box is kept if the box touches the region, and a circle means the circle, not its enclosing square. A tight region in a sparse area can come back empty even though the client holds good places a couple of kilometers off. That's a feature of predictability, but watch for it in testing.
 
-You cannot search "Kyoto" without knowing roughly where Kyoto is. Tiles don't work like a geocoder.
+You cannot search "Kyoto" without knowing roughly where Kyoto is. Tiles don't work like a geocoder. The JavaScript SDK's keyword calls, such as `searchByKeyword`, are the exception: they ask the server to match by name, and the server then learns your keyword.
 
 ## Sorting
 
@@ -96,7 +97,7 @@ Each hit in `places` carries:
 | `distance` | Metres from the region's centre to the nearest point of the place; 0 if the place contains the centre. |
 | `score` | Text similarity, 0 to 1; none if you gave no text. |
 
-The Kotlin, Python and Rust SDKs also give hits `name` and `location` helpers; JavaScript and Swift expose `place` as served.
+The Kotlin, Python and Rust SDKs also give hits `name` and `location` helpers; Swift exposes `place` as served. JavaScript hits carry `name` and `location` too, along with `via` (`"tiles"` or `"keyword"`) and `collection`; see the [JavaScript page](/sdk/javascript/).
 
 ## Overview versus complete
 
@@ -126,8 +127,9 @@ There are no retries. A failed `getTiles` request is different: with no tile lis
 - GETs for the tile URLs exactly as the server named them, minus any already cached.
 - `describeService` and `describeTileset`, only if you call them.
 - `getPlace` on a cache miss, sending the `origin` you asked for.
+- The JavaScript SDK's keyword calls, such as `searchByKeyword`, if you call them: one `org.atgeo.searchPlaces` request with the dataset, the collection if there is one, your keyword exactly as you passed it, and the region if you gave one, snapped outward to whole degrees.
 
-Not on the wire: your search text, in any form, and your precise region or location. Those are used only on the device, for filtering, ranking and distance. The server does see your IP address and whatever headers your HTTP stack adds (the Swift, Kotlin, Python and Rust default transports keep these generic; in a browser, the JavaScript client's requests carry the browser's own), and it can tell which tiles you've fetched. Snapping hides where in a ~1 km cell you are; it doesn't hide the cell. The SDKs send no telemetry.
+Not on the wire, for every search except the JavaScript SDK's keyword calls: your search text, in any form, and your precise region or location. Those are used only on the device, for filtering, ranking and distance. The keyword calls send the keyword, and a region no finer than a whole degree. The server does see your IP address and whatever headers your HTTP stack adds (the Swift, Kotlin, Python and Rust default transports keep these generic; in a browser, the JavaScript client's requests carry the browser's own), and it can tell which tiles you've fetched. Snapping hides where in a ~1 km cell you are; it doesn't hide the cell. The SDKs send no telemetry.
 
 `getPlace` on a cache miss is a sharper signal than a tile fetch: it tells the server which place you're looking at. It's meant for resolving a shared link, and the cache is checked first so that tapping a search result doesn't hit the network.
 
@@ -155,7 +157,7 @@ A 2xx body with nothing usable in it raises a separate decoding error. Bad argum
 
 ## What's deliberately absent
 
-- **Region-less search.** A region is required.
+- **Region-less search.** A region is required, except for the JavaScript SDK's keyword calls, such as `searchByKeyword`.
 - **Writing.** No check-ins, no posting records. There's no lexicon for it yet.
 - **Discovery by DID or handle.** You pass a server URL; the default is `https://places.atgeo.org`.
 - **Version negotiation.** Ignore keys you don't recognise; that's the whole forward-compatibility story.
