@@ -11,6 +11,7 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("src/js");
   eleventyConfig.addPassthroughCopy({ "node_modules/@atgeo/client/dist/*.js": "js/atgeo-client" });
   eleventyConfig.addPassthroughCopy("src/assets");
+  eleventyConfig.addPassthroughCopy("src/talks");
   eleventyConfig.addPassthroughCopy("src/CNAME");
 
   eleventyConfig.addShortcode("mapSearch", function () {
