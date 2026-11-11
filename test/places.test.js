@@ -41,7 +41,7 @@ const bounds = (west, south, east, north) => ({
 test('DATASETS offers the three served tilesets and maps to searchNearby options', () => {
   assert.deepEqual(
     DATASETS.map((d) => d.id),
-    ['overture-place', 'osm', 'overture-division'],
+    ['osm', 'overture-place', 'overture-division'],
   );
   assert.deepEqual(searchOptions('overture-place'), { dataset: 'overturemaps.org', collection: 'place' });
   assert.deepEqual(searchOptions('osm'), { dataset: 'openstreetmap.org' });

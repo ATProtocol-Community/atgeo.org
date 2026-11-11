@@ -11,7 +11,7 @@ const METHODS = [
   'org.atgeo.describeService',
   'org.atgeo.describeTileset',
 ];
-const SLUGS = ['overture-place', 'osm', 'overture-division'];
+const SLUGS = ['osm', 'overture-place', 'overture-division'];
 
 function buildHTML() {
   return `

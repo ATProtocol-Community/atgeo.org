@@ -20,7 +20,7 @@ const css = readFileSync(fileURLToPath(new URL('../src/css/style.css', import.me
 const html = (note) => `<!doctype html><style>${css}</style>
 <div id="map-search" class="widget"><div class="map-search">
   <input type="text" placeholder="Search for places...">
-  <select><option>Overture places</option></select>
+  <select><option>OpenStreetMap</option></select>
   <button type="button" class="icon-btn"></button>
   <button type="button" class="icon-btn icon-btn-wide"></button>
   <span class="map-search-error"${note ? '' : ' hidden'}>${note}</span>

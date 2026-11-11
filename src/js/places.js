@@ -2,8 +2,8 @@
 // and widenSearch sequences the client's searches. No network of its own, no DOM.
 
 export const DATASETS = [
-  { id: 'overture-place', label: 'Overture places', dataset: 'overturemaps.org', collection: 'place' },
   { id: 'osm', label: 'OpenStreetMap', dataset: 'openstreetmap.org' },
+  { id: 'overture-place', label: 'Overture places', dataset: 'overturemaps.org', collection: 'place' },
   { id: 'overture-division', label: 'Overture divisions', dataset: 'overturemaps.org', collection: 'division' },
 ];
 
