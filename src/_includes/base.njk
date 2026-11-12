@@ -17,12 +17,14 @@
     <meta name="twitter:title" content="{% if title %}{{ title }} — ATGeo{% else %}ATGeo — Places for AT Protocol{% endif %}" />
     <meta name="twitter:description" content="A Place lexicon for AT Protocol, a privacy-preserving gazetteer of geographic venues, and client SDKs to search it." />
     <meta name="twitter:image" content="https://atgeo.org/assets/og-image.png" />
+    <link rel="alternate" type="application/atom+xml" title="ATGeo News" href="/feed.xml" />
     <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body>
     <div class="page-layout">
       {% set navItems = [
         { url: "/",            label: "Overview" },
+        { url: "/news/",       label: "News" },
         { url: "/usage/",      label: "Usage" },
         { url: "/place/",      label: "Lexicon" },
         { url: "/api/",        label: "XRPC API" },
