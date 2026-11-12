@@ -1,0 +1,25 @@
+---
+permalink: /feed.xml
+eleventyExcludeFromCollections: true
+---
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>ATGeo News</title>
+  <subtitle>Updates on the ATGeo lexicon, gazetteer and SDKs.</subtitle>
+  <link href="https://atgeo.org/feed.xml" rel="self" />
+  <link href="https://atgeo.org/news/" />
+  <id>https://atgeo.org/news/</id>
+  <updated>{% if collections.news.length %}{{ collections.news | reverse | first | feedDate }}{% else %}1970-01-01T00:00:00Z{% endif %}</updated>
+{%- for post in collections.news | reverse %}
+  <entry>
+    <title>{{ post.data.title }}</title>
+    <link href="https://atgeo.org{{ post.url }}" />
+    <id>https://atgeo.org{{ post.url }}</id>
+    <updated>{{ post.date | isoDate }}</updated>
+    {%- if post.data.summary %}
+    <summary>{{ post.data.summary }}</summary>
+    {%- endif %}
+    <content type="html">{{ post.templateContent | escape }}</content>
+  </entry>
+{%- endfor %}
+</feed>

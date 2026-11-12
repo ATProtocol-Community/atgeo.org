@@ -14,6 +14,11 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("src/talks");
   eleventyConfig.addPassthroughCopy("src/CNAME");
 
+  eleventyConfig.addFilter("isoDate", (d) => new Date(d).toISOString());
+  eleventyConfig.addFilter("feedDate", (post) => new Date(post.date).toISOString());
+  eleventyConfig.addFilter("displayDate", (d) =>
+    new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeZone: "UTC" }).format(new Date(d)));
+
   eleventyConfig.addShortcode("mapSearch", function () {
     return '<div id="map-search" class="widget"></div>';
   });
