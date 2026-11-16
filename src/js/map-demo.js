@@ -63,8 +63,7 @@ if (container) {
   const map = new maplibregl.Map({
     container: container,
     style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json',
-    center: [-122.4375, 37.7625],
-    zoom: 13.5,
+    bounds: [[-122.52, 37.70], [-122.35, 37.84]],
   });
 
   const spinner = document.createElement('div');
