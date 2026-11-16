@@ -16,7 +16,9 @@ import {
   hitMarkerPoint,
   hitBox,
   boundsOf,
-  widenSearch,
+  searchBoth,
+  globalLeads,
+  LEAD_MARGIN,
 } from '../src/js/places.js';
 
 const fixture = (name) =>
@@ -294,7 +296,7 @@ test('escapeHtml and highlightJson never let markup through', () => {
   assert.ok(html.includes('<span class="json-bool">true</span>'));
 });
 
-// widenSearch / hit geometry
+// hit geometry
 
 const pointHit = (lat, lon) => ({ name: 'p', location: { point: { lat, lon }, bbox: null } });
 const bboxHit = (south, west, north, east) => ({
@@ -359,9 +361,7 @@ test('boundsOf of nothing is null', () => {
 });
 
 const REGION = [-122.5, 37.7, -122.4, 37.8];
-const VIEWPORT = [-123, 37, -122, 38];
 const OPTIONS = { dataset: 'overture.places' };
-const HIT = pointHit(37.77, -122.43);
 
 const fakeClient = (script) => {
   const calls = [];
@@ -380,108 +380,126 @@ const fakeClient = (script) => {
 const failure = (code) => Object.assign(new Error(code), { code });
 const keyword = (places) => ({ places });
 const nearby = (places, extra = {}) => ({ places, overview: false, expanded: false, ...extra });
-const widen = (client, extra = {}) =>
-  widenSearch({
-    atgeo: client,
-    region: REGION,
-    viewport: VIEWPORT,
-    text: 'alamo',
-    options: OPTIONS,
-    isStale: () => false,
-    ...extra,
-  });
+const hit = (origin, importance) => ({ ...pointHit(37.77, -122.43), origin, importance });
+const both = (client) =>
+  searchBoth({ atgeo: client, region: REGION, text: 'paris', options: OPTIONS });
 
-test('widenSearch stage 1 sends expand, text, the region bbox and options', async () => {
-  const client = fakeClient({ searchNearby: [nearby([HIT])] });
-  await widen(client);
-  assert.deepEqual(client.calls, [
-    ['searchNearby', { region: { bbox: REGION }, text: 'alamo', expand: true, ...OPTIONS }],
-  ]);
+// globalLeads
+
+test('globalLeads is false with no global hits', () => {
+  assert.equal(globalLeads([hit('n1', 10)], []), false);
+  assert.equal(globalLeads([], []), false);
 });
 
-test('widenSearch stops at stage 1 on hits', async () => {
-  const result = nearby([HIT]);
-  const client = fakeClient({ searchNearby: [result] });
-  const outcome = await widen(client);
-  assert.deepEqual(outcome, { stage: 1, hits: [HIT], result });
-  assert.equal(client.calls.length, 1);
+test('globalLeads is true with global hits and no nearby hits', () => {
+  assert.equal(globalLeads([], [hit('g1', 5)]), true);
 });
 
-test('widenSearch falls to stage 2 with the viewport bbox and stops on hits', async () => {
-  const client = fakeClient({ searchNearby: [nearby([])], searchByKeyword: [keyword([HIT])] });
-  const outcome = await widen(client);
-  assert.equal(outcome.stage, 2);
-  assert.deepEqual(outcome.hits, [HIT]);
-  assert.deepEqual(client.calls[1], [
-    'searchByKeyword',
-    { keyword: 'alamo', region: { bbox: VIEWPORT }, ...OPTIONS },
-  ]);
-  assert.equal(client.calls.length, 2);
+test('globalLeads is true when the first global hit beats the best nearby by LEAD_MARGIN or more', () => {
+  assert.equal(LEAD_MARGIN, 40);
+  assert.equal(globalLeads([hit('n1', 46), hit('n2', 30)], [hit('g1', 96)]), true);
+  assert.equal(globalLeads([hit('n1', 50)], [hit('g1', 90)]), true);
 });
 
-test('widenSearch falls to stage 3 with no region when stage 2 is empty', async () => {
-  const client = fakeClient({ searchNearby: [nearby([])], searchByKeyword: [keyword([]), keyword([HIT])] });
-  const outcome = await widen(client);
-  assert.equal(outcome.stage, 3);
-  assert.deepEqual(outcome.hits, [HIT]);
-  assert.deepEqual(client.calls[2], ['searchByKeyword', { keyword: 'alamo', ...OPTIONS }]);
-  assert.equal(client.calls.length, 3);
+test('globalLeads is false when the first global hit beats the best nearby by less than LEAD_MARGIN', () => {
+  assert.equal(globalLeads([hit('n1', 39), hit('n2', 48)], [hit('g1', 84)]), false);
 });
 
-test('widenSearch falls through an empty overview result', async () => {
-  const client = fakeClient({
-    searchNearby: [nearby([], { overview: true })],
-    searchByKeyword: [keyword([HIT])],
-  });
-  const outcome = await widen(client);
-  assert.equal(outcome.stage, 2);
+test('globalLeads counts a missing importance as 0', () => {
+  assert.equal(globalLeads([hit('n1', null)], [hit('g1', 40)]), true);
+  assert.equal(globalLeads([hit('n1', 1)], [hit('g1', null)]), false);
+  assert.equal(globalLeads([hit('n1')], [hit('g1', 40)]), true);
 });
 
-test('widenSearch falls through BboxTooLarge with a null result', async () => {
-  const client = fakeClient({ searchNearby: [failure('BboxTooLarge')], searchByKeyword: [keyword([HIT])] });
-  const outcome = await widen(client);
-  assert.equal(outcome.stage, 2);
-  assert.equal(outcome.result, null);
+// searchBoth
+
+test('searchBoth sends the nearby search with expand and the region, and the keyword with no region', async () => {
+  const client = fakeClient({ searchNearby: [nearby([])], searchByKeyword: [keyword([])] });
+  await both(client);
+  assert.deepEqual(
+    client.calls.find(([name]) => name === 'searchNearby'),
+    ['searchNearby', { region: { bbox: REGION }, text: 'paris', expand: true, ...OPTIONS }],
+  );
+  assert.deepEqual(
+    client.calls.find(([name]) => name === 'searchByKeyword'),
+    ['searchByKeyword', { keyword: 'paris', ...OPTIONS }],
+  );
 });
 
-test('widenSearch propagates another stage 1 error', async () => {
-  const client = fakeClient({ searchNearby: [failure('Boom')] });
-  await assert.rejects(widen(client), { code: 'Boom' });
-});
-
-test('widenSearch ends at stage 2 on KeywordRequired without calling stage 3', async () => {
-  const client = fakeClient({ searchNearby: [nearby([])], searchByKeyword: [failure('KeywordRequired')] });
-  const outcome = await widen(client);
-  assert.equal(outcome.stage, 2);
-  assert.deepEqual(outcome.hits, []);
-  assert.equal(client.calls.length, 2);
-});
-
-test('widenSearch propagates another stage 2 error', async () => {
-  const client = fakeClient({ searchNearby: [nearby([])], searchByKeyword: [failure('Boom')] });
-  await assert.rejects(widen(client), { code: 'Boom' });
-});
-
-test('widenSearch returns null when stale after stage 1, with no further calls', async () => {
-  const client = fakeClient({ searchNearby: [nearby([])], searchByKeyword: [keyword([HIT])] });
-  assert.equal(await widen(client, { isStale: () => true }), null);
-  assert.equal(client.calls.length, 1);
-});
-
-test('widenSearch returns null when stale after stage 2, with no further calls', async () => {
-  const client = fakeClient({ searchNearby: [nearby([])], searchByKeyword: [keyword([]), keyword([HIT])] });
-  let awaited = 0;
-  const wrapped = {
-    searchNearby: async (a) => { awaited++; return client.searchNearby(a); },
-    searchByKeyword: async (a) => { awaited++; return client.searchByKeyword(a); },
+test('searchBoth sends the keyword search before the nearby search settles', async () => {
+  let release;
+  const calls = [];
+  const client = {
+    searchNearby: () => {
+      calls.push('searchNearby');
+      return new Promise((resolve) => { release = () => resolve(nearby([])); });
+    },
+    searchByKeyword: async () => {
+      calls.push('searchByKeyword');
+      return keyword([]);
+    },
   };
-  assert.equal(await widen(wrapped, { isStale: () => awaited >= 2 }), null);
-  assert.equal(client.calls.length, 2);
+  const pending = both(client);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(calls.sort(), ['searchByKeyword', 'searchNearby']);
+  release();
+  await pending;
 });
 
-test('widenSearch returns an expanded result as stage 1', async () => {
-  const result = nearby([HIT], { expanded: true });
-  const outcome = await widen(fakeClient({ searchNearby: [result] }));
-  assert.equal(outcome.stage, 1);
-  assert.equal(outcome.result, result);
+test('searchBoth leads with nearby hits, then global hits, when nearby leads', async () => {
+  const n1 = hit('n1', 48);
+  const n2 = hit('n2', 30);
+  const g1 = hit('g1', 84);
+  const g2 = hit('g2', 60);
+  const result = nearby([n1, n2]);
+  const outcome = await both(fakeClient({ searchNearby: [result], searchByKeyword: [keyword([g1, g2])] }));
+  assert.deepEqual(outcome, { lead: 'nearby', hits: [n1, n2, g1, g2], result });
+});
+
+test('searchBoth puts the first global hit, then nearby hits, then the other global hits, when global leads', async () => {
+  const n1 = hit('n1', 46);
+  const g1 = hit('g1', 96);
+  const g2 = hit('g2', 90);
+  const result = nearby([n1]);
+  const outcome = await both(fakeClient({ searchNearby: [result], searchByKeyword: [keyword([g1, g2])] }));
+  assert.deepEqual(outcome, { lead: 'global', hits: [g1, n1, g2], result });
+});
+
+test('searchBoth drops a later hit whose origin already appears, but never one with a null origin', async () => {
+  const n1 = hit('same', 48);
+  const n2 = hit(null, 20);
+  const g1 = hit('same', 50);
+  const g2 = hit(null, 40);
+  const outcome = await both(fakeClient({
+    searchNearby: [nearby([n1, n2])],
+    searchByKeyword: [keyword([g1, g2])],
+  }));
+  assert.equal(outcome.lead, 'nearby');
+  assert.deepEqual(outcome.hits, [n1, n2, g2]);
+});
+
+test('searchBoth gives nearby hits only when the keyword is refused as too short', async () => {
+  const n1 = hit('n1', 30);
+  const result = nearby([n1]);
+  const outcome = await both(fakeClient({
+    searchNearby: [result],
+    searchByKeyword: [failure('KeywordRequired')],
+  }));
+  assert.deepEqual(outcome, { lead: 'nearby', hits: [n1], result });
+});
+
+test('searchBoth gives nearby hits only when the keyword search fails otherwise', async () => {
+  const n1 = hit('n1', 30);
+  const result = nearby([n1]);
+  const outcome = await both(fakeClient({ searchNearby: [result], searchByKeyword: [failure('Boom')] }));
+  assert.deepEqual(outcome, { lead: 'nearby', hits: [n1], result });
+});
+
+test('searchBoth leads with global hits and a null result when the nearby search is BboxTooLarge', async () => {
+  const g1 = hit('g1', 93);
+  const outcome = await both(fakeClient({
+    searchNearby: [failure('BboxTooLarge')],
+    searchByKeyword: [keyword([g1])],
+  }));
+  assert.deepEqual(outcome, { lead: 'global', hits: [g1], result: null });
 });

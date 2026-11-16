@@ -1,5 +1,5 @@
 // Display helpers for the demos: turns @atgeo/client hits into things a map and a list can show,
-// and widenSearch sequences the client's searches. No network of its own, no DOM.
+// and searchBoth runs the client's nearby and keyword searches together. No network of its own, no DOM.
 
 export const DATASETS = [
   { id: 'osm', label: 'OpenStreetMap', dataset: 'openstreetmap.org' },
@@ -239,34 +239,47 @@ export function boundsOf(boxes) {
   return west > east ? null : [west, south, east, north];
 }
 
-// Search for text in widening stages, stopping at the first with hits: 1, the nearby search of
-// the region with expansion (the text stays in the browser); 2, a keyword search over the
-// viewport; 3, a keyword search of everything. Resolves to { stage, hits, result }, where result
-// is stage 1's answer or null if it threw BboxTooLarge, or to null once isStale() is true.
-export async function widenSearch({ atgeo, region, viewport, text, options, isStale }) {
-  let result = null;
-  try {
-    result = await atgeo.searchNearby({ region: { bbox: region }, text, expand: true, ...options });
-  } catch (err) {
-    if (err.code !== 'BboxTooLarge') throw err;
-  }
-  if (isStale()) return null;
-  // An overview answer is a sample, so an empty one proves nothing.
-  if (result?.places.length) return { stage: 1, hits: result.places, result };
+// How far the first global hit's importance must exceed the best nearby hit's to lead. Measured
+// against places.atgeo.org: "Berkeley" from San Francisco leads by 47, "pizza" falls short at 36.
+export const LEAD_MARGIN = 40;
 
-  let hits;
-  try {
-    ({ places: hits } = await atgeo.searchByKeyword({ keyword: text, region: { bbox: viewport }, ...options }));
-  } catch (err) {
-    if (err.code !== 'KeywordRequired') throw err;
-    return isStale() ? null : { stage: 2, hits: [], result };
-  }
-  if (isStale()) return null;
-  if (hits.length) return { stage: 2, hits, result };
+const importanceOf = (hit) => hit.importance ?? 0;
 
-  ({ places: hits } = await atgeo.searchByKeyword({ keyword: text, ...options }));
-  if (isStale()) return null;
-  return { stage: 3, hits, result };
+// Whether the keyword search's hits lead the merged list instead of the nearby ones.
+export function globalLeads(nearbyHits, globalHits) {
+  if (globalHits.length === 0) return false;
+  if (nearbyHits.length === 0) return true;
+  const bestNearby = Math.max(...nearbyHits.map(importanceOf));
+  return importanceOf(globalHits[0]) - bestNearby >= LEAD_MARGIN;
+}
+
+// The nearby search of the region and a keyword search of everything, sent together and merged
+// into one list. Resolves to { lead: 'nearby' | 'global', hits, result }, where result is the
+// nearby answer or null if it threw BboxTooLarge. A failed keyword search counts as no hits, so
+// it never hides nearby ones.
+export async function searchBoth({ atgeo, region, text, options }) {
+  const [result, globalHits] = await Promise.all([
+    atgeo.searchNearby({ region: { bbox: region }, text, expand: true, ...options }).catch((err) => {
+      if (err.code !== 'BboxTooLarge') throw err;
+      return null;
+    }),
+    atgeo.searchByKeyword({ keyword: text, ...options }).then((r) => r.places, () => []),
+  ]);
+  const nearbyHits = result?.places ?? [];
+  const lead = globalLeads(nearbyHits, globalHits) ? 'global' : 'nearby';
+  // Only the leading global place goes ahead of the nearby hits: the display keeps the first
+  // dozen, and the keyword search returns up to 20.
+  const ordered = lead === 'global'
+    ? [globalHits[0], ...nearbyHits, ...globalHits.slice(1)]
+    : [...nearbyHits, ...globalHits];
+  const seen = new Set();
+  const hits = ordered.filter((hit) => {
+    if (hit.origin === null || hit.origin === undefined) return true;
+    if (seen.has(hit.origin)) return false;
+    seen.add(hit.origin);
+    return true;
+  });
+  return { lead, hits, result };
 }
 
 // Priority order of garganorn's OSM primary category (sql/_osm_category_case.sql).
