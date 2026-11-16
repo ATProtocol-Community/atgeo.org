@@ -4,7 +4,7 @@
 import { createClient, AtgeoError, SERVER } from './client.js';
 import {
   DATASETS, searchOptions, placePoint, viewportBbox, xrpcURL, fitsBudget, findSearchableBox, boxNote,
-  hitMarkerPoint, hitBox, boundsOf, searchBoth,
+  hitMarkerPoint, hitBox, boundsOf, searchBoth, leaderFrame,
 } from './places.js';
 
 const container = document.getElementById('map-demo');
@@ -145,7 +145,7 @@ if (container) {
 
   function fitTo(boxes) {
     const bounds = boundsOf(boxes);
-    if (bounds) map.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], { padding: 50, maxZoom: 17 });
+    if (bounds) map.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], { padding: 50, maxZoom: 15 });
   }
 
   async function doSearch() {
@@ -256,7 +256,9 @@ if (container) {
     });
 
     if (lead === 'global') {
-      currentFit = [hitBox(hits[0])];
+      // From every keyword hit, not just those listed: nearby hits can push the leader's
+      // neighbours past RESULT_LIMIT.
+      currentFit = leaderFrame(outcome.hits.filter((h) => h.via === 'keyword'));
     } else if (!expanded) {
       // Bbox-derived points sit wherever the view was; fitting to them would only drift. Keyword
       // hits may be anywhere, so they never widen a nearby-led frame.
