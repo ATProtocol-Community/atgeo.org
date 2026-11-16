@@ -1,10 +1,10 @@
-// Map demo: searches the gazetteer through @atgeo/client. What you type stays in the browser
-// unless nothing matches nearby and a keyword search runs.
+// Map demo: searches the gazetteer through @atgeo/client. A text search runs the nearby search
+// and a keyword search together, so what you type goes to the gazetteer.
 
 import { createClient, AtgeoError, SERVER } from './client.js';
 import {
   DATASETS, searchOptions, placePoint, viewportBbox, xrpcURL, fitsBudget, findSearchableBox, boxNote,
-  hitMarkerPoint, hitBox, boundsOf, widenSearch,
+  hitMarkerPoint, hitBox, boundsOf, searchBoth,
 } from './places.js';
 
 const container = document.getElementById('map-demo');
@@ -186,14 +186,11 @@ if (container) {
       if (seq !== searchSeq) return;
       if (box) region = box;
       if (text) {
-        outcome = await widenSearch({
-          atgeo: client, region, viewport, text, options, isStale: () => seq !== searchSeq,
-        });
-        if (!outcome) return;
+        outcome = await searchBoth({ atgeo: client, region, text, options });
       } else {
         // searchNearby throws synchronously for a bad region; await inside try catches both.
         const result = await atgeo.searchNearby({ region: { bbox: region }, ...options });
-        outcome = { stage: 1, hits: result.places, result };
+        outcome = { lead: 'nearby', hits: result.places, result };
       }
     } catch (err) {
       if (seq !== searchSeq) return;
@@ -211,17 +208,18 @@ if (container) {
     }
     if (seq !== searchSeq) return;
 
-    const { stage, result } = outcome;
+    const { lead, result } = outcome;
     const hits = outcome.hits.slice(0, RESULT_LIMIT);
-    const expanded = stage === 1 && result.expanded;
+    const expanded = !!result?.expanded;
     const notes = [];
-    if (stage === 1) {
+    if (result) {
       if (box) {
         showSearchBox(box);
         notes.push(boxNote(box));
       }
       // An overview answer is a sample, so an empty one means "zoom in", not "nothing here".
-      if (result.overview) notes.push(hits.length ? 'Showing only the most important places here; zoom in for more' : 'Zoom in to search here');
+      // Its own places decide, not the merged list, which may hold only keyword hits.
+      if (result.overview) notes.push(result.places.length ? 'Showing only the most important places here; zoom in for more' : 'Zoom in to search here');
       if (!result.complete) notes.push(`${result.tiles.failed} of ${result.tiles.fetched + result.tiles.failed} tiles failed to load`);
       if (hits.length === 0 && !result.overview) notes.push('No places found here');
     } else if (hits.length === 0) {
@@ -230,7 +228,8 @@ if (container) {
     if (notes.length) showNote(notes.join('. '));
 
     hits.forEach((hit, i) => {
-      const point = stage === 1 && !expanded ? placePoint(hit.place, region) : hitMarkerPoint(hit);
+      const nearby = hit.via === 'tiles';
+      const point = nearby && !expanded ? placePoint(hit.place, region) : hitMarkerPoint(hit);
       if (!point) return;
 
       const name = typeof hit.place.name === 'string' ? hit.place.name : '(unnamed)';
@@ -253,18 +252,19 @@ if (container) {
         selectPlace(hit, i);
       });
 
-      markers.push({ marker, approximate: !!point.approximate, index: i, point });
+      markers.push({ marker, approximate: !!point.approximate, nearby, index: i, point });
     });
 
-    if (stage === 1 && !expanded) {
-      // Bbox-derived points sit wherever the view was; fitting to them would only drift.
-      currentFit = markers.filter((m) => !m.approximate).map((m) => [m.point.lon, m.point.lat, m.point.lon, m.point.lat]);
-    } else if (stage === 1) {
-      currentFit = [viewport, hitBox(hits[0])];
-    } else if (stage === 2) {
-      currentFit = hits.map(hitBox);
-    } else {
+    if (lead === 'global') {
       currentFit = [hitBox(hits[0])];
+    } else if (!expanded) {
+      // Bbox-derived points sit wherever the view was; fitting to them would only drift. Keyword
+      // hits may be anywhere, so they never widen a nearby-led frame.
+      currentFit = markers
+        .filter((m) => m.nearby && !m.approximate)
+        .map((m) => [m.point.lon, m.point.lat, m.point.lon, m.point.lat]);
+    } else {
+      currentFit = [viewport, hitBox(hits[0])];
     }
 
     document.dispatchEvent(new CustomEvent('search-results', { detail: hits }));
