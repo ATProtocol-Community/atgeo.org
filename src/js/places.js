@@ -213,6 +213,27 @@ export function hitBox(hit) {
   return null;
 }
 
+// How close, in degrees of latitude and of longitude, a keyword hit must be to the leading one to
+// share its frame. Same-named places elsewhere ("Berkeley" in California and in London) fall outside.
+export const LEADER_RADIUS = 1;
+
+const boxCentre = ([w, s, e, n]) => [(w + e) / 2, (s + n) / 2];
+
+// The boxes of the keyword hits near the first one, the first included, for framing a distant
+// lead without zooming in on one point. [] when the first hit has no location.
+export function leaderFrame(globalHits) {
+  const leader = hitBox(globalHits[0]);
+  if (!leader) return [];
+  const [lon, lat] = boxCentre(leader);
+  return globalHits
+    .map(hitBox)
+    .filter((box) => {
+      if (!box) return false;
+      const [x, y] = boxCentre(box);
+      return Math.abs(x - lon) <= LEADER_RADIUS && Math.abs(y - lat) <= LEADER_RADIUS;
+    });
+}
+
 // The smallest box covering the boxes (nulls ignored), or null for none. Crossing boxes are
 // unwrapped, and each box is shifted by a world to sit nearest those before it, so longitudes
 // may run past 180; MapLibre accepts that.

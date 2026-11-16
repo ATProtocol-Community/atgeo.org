@@ -19,6 +19,8 @@ import {
   searchBoth,
   globalLeads,
   LEAD_MARGIN,
+  leaderFrame,
+  LEADER_RADIUS,
 } from '../src/js/places.js';
 
 const fixture = (name) =>
@@ -502,4 +504,55 @@ test('searchBoth leads with global hits and a null result when the nearby search
     searchByKeyword: [keyword([g1])],
   }));
   assert.deepEqual(outcome, { lead: 'global', hits: [g1], result: null });
+});
+
+// leaderFrame
+
+const keywordPoint = (origin, lat, lon) => ({ ...pointHit(lat, lon), origin, via: 'keyword' });
+const keywordBox = (origin, south, west, north, east) => ({ ...bboxHit(south, west, north, east), origin, via: 'keyword' });
+
+test('leaderFrame keeps the leader and the hits within LEADER_RADIUS of it', () => {
+  assert.equal(LEADER_RADIUS, 1);
+  const hits = [
+    keywordPoint('nyc', 40.71, -74.0),
+    keywordPoint('columbia', 40.81, -73.96),
+    keywordPoint('grand-central', 40.75, -73.98),
+  ];
+  assert.deepEqual(leaderFrame(hits), [
+    [-74.0, 40.71, -74.0, 40.71],
+    [-73.96, 40.81, -73.96, 40.81],
+    [-73.98, 40.75, -73.98, 40.75],
+  ]);
+});
+
+test('leaderFrame drops hits farther than LEADER_RADIUS from the leader', () => {
+  const hits = [
+    keywordPoint('berkeley-ca', 37.87, -122.27),
+    keywordPoint('uc-berkeley', 37.87, -122.26),
+    keywordPoint('berkeley-square', 51.51, -0.15),
+  ];
+  assert.deepEqual(leaderFrame(hits), [
+    [-122.27, 37.87, -122.27, 37.87],
+    [-122.26, 37.87, -122.26, 37.87],
+  ]);
+});
+
+test('leaderFrame measures from the centre of a leader given as a bbox', () => {
+  const hits = [
+    keywordBox('paris', 48.82, 2.22, 48.9, 2.47),
+    keywordBox('paris-15e', 48.83, 2.26, 48.85, 2.32),
+    keywordBox('helsinki', 60.1, 24.8, 60.3, 25.2),
+  ];
+  assert.deepEqual(leaderFrame(hits), [[2.22, 48.82, 2.47, 48.9], [2.26, 48.83, 2.32, 48.85]]);
+});
+
+test('leaderFrame skips hits with no location', () => {
+  const none = { name: 'x', origin: 'x', via: 'keyword', location: { point: null, bbox: null } };
+  assert.deepEqual(leaderFrame([keywordPoint('a', 10, 10), none]), [[10, 10, 10, 10]]);
+});
+
+test('leaderFrame is empty for no hits or a leader with no location', () => {
+  const none = { name: 'x', origin: 'x', via: 'keyword', location: { point: null, bbox: null } };
+  assert.deepEqual(leaderFrame([]), []);
+  assert.deepEqual(leaderFrame([none, keywordPoint('a', 10, 10)]), []);
 });
